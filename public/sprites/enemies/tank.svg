@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Treads -->
+  <rect x="2" y="6" width="4" height="22" rx="2" fill="#374151"/>
+  <rect x="26" y="6" width="4" height="22" rx="2" fill="#374151"/>
+  <!-- Body -->
+  <rect x="6" y="6" width="20" height="20" rx="2" fill="#94a3b8" stroke="#475569" stroke-width="2"/>
+  <!-- Top plate -->
+  <rect x="8" y="8" width="16" height="4" fill="#cbd5e1"/>
+  <!-- Visor -->
+  <rect x="8" y="14" width="16" height="4" rx="1" fill="#1e293b"/>
+  <!-- Rivets -->
+  <circle cx="10" cy="22" r="1.5" fill="#475569"/>
+  <circle cx="22" cy="22" r="1.5" fill="#475569"/>
+</svg>

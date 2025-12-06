@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
+  <circle cx="14" cy="14" r="12" fill="#ec4899" stroke="#000" stroke-width="2"/>
+  <!-- Foot/kick icon -->
+  <path d="M10 10 L10 18 Q10 22 14 22 L18 22" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="18" cy="22" r="2" fill="white"/>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Shadow -->
+  <ellipse cx="16" cy="28" rx="8" ry="3" fill="rgba(0,0,0,0.15)"/>
+  <!-- Body -->
+  <path d="M4 14 Q4 4 16 4 Q28 4 28 14 L28 24 L24 20 L20 24 L16 20 L12 24 L8 20 L4 24 Z" 
+        fill="#c084fc" stroke="#581c87" stroke-width="2"/>
+  <!-- Highlight -->
+  <ellipse cx="10" cy="10" rx="3" ry="2" fill="#e9d5ff" opacity="0.5"/>
+  <!-- Eyes -->
+  <circle cx="11" cy="14" r="3" fill="white"/>
+  <circle cx="11" cy="14" r="1.5" fill="#581c87"/>
+  <circle cx="21" cy="14" r="3" fill="white"/>
+  <circle cx="21" cy="14" r="1.5" fill="#581c87"/>
+</svg>

@@ -1,12 +1,13 @@
 /**
  * Enemy Renderer
  * 
- * Draws all enemy types using a strategy pattern (lookup table).
- * Each enemy type has its own renderer function.
+ * Draws all enemy types using the asset system.
+ * Falls back to procedural Canvas rendering if no asset is loaded.
  */
 
 import { Enemy, EnemyType } from '../types';
 import { PLAYER_SIZE } from '../constants';
+import { assetManager, getEnemyAssetKey } from '../assets';
 import {
   COLORS,
   ENEMY_COLORS,
@@ -161,7 +162,7 @@ const ENEMY_RENDERERS: Record<EnemyType, EnemyRenderer> = {
 // ============================================================================
 
 /**
- * Draw a single enemy
+ * Draw a single enemy using the asset system
  */
 export function drawEnemy(ctx: CanvasRenderingContext2D, enemy: Enemy, now: number): void {
   const cx = enemy.x + PLAYER_SIZE / 2;
@@ -173,17 +174,23 @@ export function drawEnemy(ctx: CanvasRenderingContext2D, enemy: Enemy, now: numb
     ctx.globalAlpha = 0.5;
   }
   
-  // Shadow beneath enemy
-  drawShadow(ctx, cx, cy, PLAYER_SIZE);
+  // Try to draw using asset system first
+  const assetKey = getEnemyAssetKey(enemy.type);
+  const asset = assetManager.get(assetKey);
   
-  // Common stroke settings for all enemies
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = COLORS.OUTLINE;
-  
-  // Render specific enemy type
-  const renderer = ENEMY_RENDERERS[enemy.type];
-  if (renderer) {
-    renderer(ctx, cx, cy, bob);
+  if (asset) {
+    // Use asset system (SVG or custom asset)
+    asset.draw(ctx, cx, cy + bob);
+  } else {
+    // Fallback to legacy Canvas rendering
+    drawShadow(ctx, cx, cy, PLAYER_SIZE);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = COLORS.OUTLINE;
+    
+    const renderer = ENEMY_RENDERERS[enemy.type];
+    if (renderer) {
+      renderer(ctx, cx, cy, bob);
+    }
   }
   
   // Reset alpha

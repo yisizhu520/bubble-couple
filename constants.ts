@@ -20,7 +20,7 @@ export const BASE_SPEED = 1;
 export const MAX_SPEED = 6;
 export const BOMB_SLIDE_SPEED = 6;
 export const CORNER_TOLERANCE = 15; // Pixels to allow corner sliding
-export const PLAYER_SIZE = 36; // Slightly smaller than tile for movement
+export const PLAYER_SIZE = 40; // Slightly smaller than tile for movement
 export const PLAYER_OFFSET = (TILE_SIZE - PLAYER_SIZE) / 2;
 
 // Enemy Config

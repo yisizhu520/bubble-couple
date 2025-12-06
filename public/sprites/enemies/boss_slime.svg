@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Shadow -->
+  <ellipse cx="24" cy="42" rx="16" ry="5" fill="rgba(0,0,0,0.2)"/>
+  <!-- Body -->
+  <ellipse cx="24" cy="28" rx="18" ry="14" fill="#bef264" stroke="#3f6212" stroke-width="2"/>
+  <!-- Drip effects -->
+  <ellipse cx="12" cy="38" rx="3" ry="4" fill="#bef264"/>
+  <ellipse cx="36" cy="36" rx="2" ry="3" fill="#bef264"/>
+  <!-- Highlight -->
+  <ellipse cx="16" cy="20" rx="5" ry="4" fill="#ecfccb" opacity="0.5"/>
+  <!-- Crown -->
+  <path d="M14 14 L18 6 L22 12 L26 4 L30 12 L34 6 L34 16 L14 16 Z" 
+        fill="#fcd34d" stroke="#92400e" stroke-width="1.5"/>
+  <!-- Eyes -->
+  <circle cx="18" cy="26" r="4" fill="white" stroke="#3f6212" stroke-width="1"/>
+  <circle cx="19" cy="27" r="2" fill="#3f6212"/>
+  <circle cx="30" cy="26" r="4" fill="white" stroke="#3f6212" stroke-width="1"/>
+  <circle cx="31" cy="27" r="2" fill="#3f6212"/>
+  <!-- Evil grin -->
+  <path d="M18 34 Q24 38 30 34" fill="none" stroke="#3f6212" stroke-width="2"/>
+</svg>

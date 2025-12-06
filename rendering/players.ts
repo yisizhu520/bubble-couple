@@ -1,16 +1,18 @@
 /**
  * Player Renderer
  * 
- * Draws players with all their states and effects:
+ * Draws players using the asset system.
+ * Supports all player states and effects:
  * - Normal, trapped, dead states
  * - Ghost mode transparency
  * - Invincibility flashing
  * - Shield effect
- * - Direction-based eye movement
+ * - Direction-based eye movement (for Canvas fallback)
  */
 
 import { Player, PlayerState, Direction } from '../types';
 import { PLAYER_SIZE } from '../constants';
+import { assetManager, getPlayerAssetKey } from '../assets';
 import {
   COLORS,
   EYE_OFFSET_X,
@@ -24,7 +26,7 @@ import {
 import { shouldFlash } from './primitives';
 
 /**
- * Draw a single player
+ * Draw a single player using the asset system
  */
 export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player, now: number): void {
   // Skip dead players
@@ -40,32 +42,51 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player, now: n
     ctx.globalAlpha = 0.5;
   }
   
-  // Shadow
-  ctx.fillStyle = COLORS.SHADOW;
-  ctx.beginPath();
-  ctx.ellipse(cx, player.y + PLAYER_SIZE, PLAYER_SIZE / 2, PLAYER_SIZE / 4, 0, 0, Math.PI * 2);
-  ctx.fill();
-  
-  // Body color (flash white when invincible)
-  ctx.fillStyle = player.color;
+  // Invincibility flash
   if (player.invincibleTimer > 0 && shouldFlash(now, PLAYER_INVINCIBLE_BLINK_SPEED)) {
-    ctx.fillStyle = COLORS.WHITE;
+    ctx.globalAlpha = 0.3;
   }
   
-  // Body circle
-  ctx.beginPath();
-  ctx.arc(cx, cy, PLAYER_SIZE / 2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = COLORS.OUTLINE;
-  ctx.stroke();
+  // Try to draw using asset system first
+  const assetKey = getPlayerAssetKey(player.id);
+  const asset = assetManager.get(assetKey);
   
+  if (asset) {
+    // Use asset system (SVG or custom asset)
+    asset.draw(ctx, cx, cy);
+  } else {
+    // Fallback to legacy Canvas rendering
+    // Shadow
+    ctx.fillStyle = COLORS.SHADOW;
+    ctx.beginPath();
+    ctx.ellipse(cx, player.y + PLAYER_SIZE, PLAYER_SIZE / 2, PLAYER_SIZE / 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Body color
+    ctx.fillStyle = player.color;
+    
+    // Body circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, PLAYER_SIZE / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = COLORS.OUTLINE;
+    ctx.stroke();
+    
+    // Normal state: draw eyes
+    if (player.state !== PlayerState.TRAPPED) {
+      drawPlayerEyes(ctx, cx, cy, player.direction);
+    }
+  }
+  
+  // Trapped state overlay (works with both asset and Canvas)
   if (player.state === PlayerState.TRAPPED) {
-    // Trapped in bubble
     ctx.fillStyle = COLORS.TRAPPED_BUBBLE;
     ctx.beginPath();
     ctx.arc(cx, cy, PLAYER_SIZE / 2 + 4, 0, Math.PI * 2);
     ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = COLORS.OUTLINE;
     ctx.stroke();
     
     // SOS text
@@ -73,9 +94,6 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player, now: n
     ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('SOS', cx, cy - 20);
-  } else {
-    // Normal state: draw eyes
-    drawPlayerEyes(ctx, cx, cy, player.direction);
   }
   
   ctx.restore();

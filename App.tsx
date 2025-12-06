@@ -10,6 +10,7 @@ import TouchControls from './components/TouchControls';
 import Lobby from './components/Lobby';
 import OnlineGame from './components/OnlineGame';
 import { GRID_W, GRID_H, TILE_SIZE, HEADER_HEIGHT } from './constants';
+import { initAssets, isAssetsReady, getAssetType } from './assets';
 
 type AppScreen = 'menu' | 'local-game' | 'online-lobby' | 'online-game';
 
@@ -20,9 +21,24 @@ const App: React.FC = () => {
   const [winner, setWinner] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [scale, setScale] = useState(1);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Online game hook - lifted to App level to persist across screens
   const onlineGame = useOnlineGame();
+
+  // Initialize assets on app start
+  useEffect(() => {
+    if (!isAssetsReady()) {
+      initAssets((progress) => {
+        setLoadingProgress(progress.percent);
+      }).then(() => {
+        setAssetsLoaded(true);
+      });
+    } else {
+      setAssetsLoaded(true);
+    }
+  }, []);
 
 
   // Calculate explicit dimensions
@@ -77,22 +93,22 @@ const App: React.FC = () => {
 
   const { gameStateRef, hudState, initGame, proceedToNextLevel } = useGameEngine(mode, handleGameOver);
 
-  const handleRestart = () => {
+  const handleRestart = useCallback(() => {
     setWinner(null);
     initGame();
-  };
+  }, [initGame]);
 
-  const handleModeSelect = (newMode: GameMode) => {
+  const handleModeSelect = useCallback((newMode: GameMode) => {
     setMode(newMode);
     setWinner(null);
     setScreen('local-game');
-  };
+  }, []);
 
-  const handleExit = () => {
+  const handleExit = useCallback(() => {
     setMode(GameMode.MENU);
     setWinner(null);
     setScreen('menu');
-  };
+  }, []);
 
   const handleOnlineClick = useCallback(() => {
     setScreen('online-lobby');
@@ -114,6 +130,28 @@ const App: React.FC = () => {
   // Calculate the scaled dimensions for the container wrapper
   const scaledWidth = gameWidth * scale;
   const scaledHeight = (isMobile ? gameHeight : totalHeight) * scale;
+
+  // Show loading screen while assets are loading
+  // NOTE: All hooks must be called before this conditional return!
+  if (!assetsLoaded) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#E0E7F1]">
+        <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 text-center">
+          <h1 className="text-3xl font-bold mb-4">🎮 Bubble Couple</h1>
+          <p className="text-lg mb-4">Loading assets...</p>
+          <div className="w-64 h-6 bg-gray-200 border-2 border-black">
+            <div 
+              className="h-full bg-blue-500 transition-all duration-150"
+              style={{ width: `${loadingProgress}%` }}
+            />
+          </div>
+          <p className="mt-2 text-sm text-gray-600">
+            {loadingProgress}% ({getAssetType().toUpperCase()} mode)
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Render online lobby
   if (screen === 'online-lobby') {

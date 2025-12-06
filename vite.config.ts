@@ -12,7 +12,9 @@ export default defineConfig(({ mode }) => {
       plugins: [react()],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        // Asset type: 'svg' (default) or 'canvas'
+        'process.env.VITE_ASSET_TYPE': JSON.stringify(env.VITE_ASSET_TYPE || 'svg'),
       },
       resolve: {
         alias: {
