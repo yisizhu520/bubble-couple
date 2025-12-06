@@ -34,9 +34,23 @@ const TouchControls: React.FC<TouchControlsProps> = ({ playerId }) => {
   };
 
   const simulateKeyEvent = (code: string, type: 'keydown' | 'keyup') => {
+    // Map code to key value for proper event simulation
+    const keyMap: { [key: string]: string } = {
+      'KeyW': 'w',
+      'KeyS': 's',
+      'KeyA': 'a',
+      'KeyD': 'd',
+      'Space': ' ',
+      'ArrowUp': 'ArrowUp',
+      'ArrowDown': 'ArrowDown',
+      'ArrowLeft': 'ArrowLeft',
+      'ArrowRight': 'ArrowRight',
+      'Enter': 'Enter',
+    };
+    
     const event = new KeyboardEvent(type, {
       code,
-      key: code,
+      key: keyMap[code] || code,
       bubbles: true,
       cancelable: true,
     });

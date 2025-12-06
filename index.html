@@ -36,8 +36,8 @@
         overscroll-behavior-y: contain;
       }
       
-      /* Prevent text selection on mobile */
-      * {
+      /* Prevent text selection and tap highlights on game elements */
+      body, button, canvas, #root {
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
