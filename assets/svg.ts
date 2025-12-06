@@ -25,17 +25,18 @@ const ITEM_SIZE = Math.round(PLAYER_SIZE * 0.8);
 
 export const SVG_ASSETS: AssetDef[] = [
   // ==================== Players ====================
+  // Body-only versions (pupils drawn dynamically based on direction)
   {
     key: 'player_1',
     sourceType: AssetSourceType.SVG,
-    url: '/sprites/players/player1.svg',
+    url: '/sprites/players/player1_body.svg',
     width: PLAYER_SIZE,
     height: PLAYER_SIZE,
   },
   {
     key: 'player_2',
     sourceType: AssetSourceType.SVG,
-    url: '/sprites/players/player2.svg',
+    url: '/sprites/players/player2_body.svg',
     width: PLAYER_SIZE,
     height: PLAYER_SIZE,
   },

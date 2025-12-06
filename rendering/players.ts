@@ -52,8 +52,13 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player, now: n
   const asset = assetManager.get(assetKey);
   
   if (asset) {
-    // Use asset system (SVG or custom asset)
+    // Use asset system (SVG body without pupils)
     asset.draw(ctx, cx, cy);
+    
+    // Draw dynamic pupils on top of SVG (for direction-based eye movement)
+    if (player.state !== PlayerState.TRAPPED) {
+      drawPlayerPupils(ctx, cx, cy, player.direction);
+    }
   } else {
     // Fallback to legacy Canvas rendering
     // Shadow
@@ -124,6 +129,20 @@ function drawPlayerEyes(
   ctx.stroke();
   ctx.fill();
   
+  // Draw pupils
+  drawPlayerPupils(ctx, cx, cy, direction);
+}
+
+/**
+ * Draw only the pupils (for use with SVG body that already has eye whites)
+ * Pupils move based on player direction
+ */
+function drawPlayerPupils(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  direction: Direction
+): void {
   // Calculate pupil offset based on direction
   const dirX = direction === Direction.RIGHT ? PUPIL_MOVE
     : direction === Direction.LEFT ? -PUPIL_MOVE

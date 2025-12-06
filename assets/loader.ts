@@ -118,23 +118,41 @@ async function createSpritesheetAsset(def: SpritesheetAssetDef): Promise<LoadedA
 /**
  * Create a loaded asset from an SVG definition
  * SVG is rasterized to a canvas for fast rendering
+ * 
+ * IMPORTANT: We render at higher resolution (2x) to ensure crisp display
+ * on high-DPI screens (Retina, etc.). The draw function scales down.
  */
 async function createSVGAsset(def: SVGAssetDef): Promise<LoadedAsset> {
   const image = await loadImage(def.url);
   
-  // Pre-render SVG to an offscreen canvas for performance
+  // Use actual device pixel ratio for crisp rendering on high-DPI displays
+  const scale = window.devicePixelRatio || 1;
+  const renderWidth = def.width * scale;
+  const renderHeight = def.height * scale;
+  
+  // Pre-render SVG to an offscreen canvas at higher resolution
   const offscreen = document.createElement('canvas');
-  offscreen.width = def.width;
-  offscreen.height = def.height;
+  offscreen.width = renderWidth;
+  offscreen.height = renderHeight;
   const offCtx = offscreen.getContext('2d')!;
-  offCtx.drawImage(image, 0, 0, def.width, def.height);
+  
+  // Draw SVG scaled to fill the canvas
+  // SVG will automatically scale based on its viewBox
+  offCtx.drawImage(image, 0, 0, renderWidth, renderHeight);
   
   return {
     def,
     loaded: true,
     image,
     draw: (ctx, x, y) => {
-      ctx.drawImage(offscreen, x - def.width / 2, y - def.height / 2);
+      // Draw the high-res canvas at the logical size
+      ctx.drawImage(
+        offscreen,
+        x - def.width / 2,
+        y - def.height / 2,
+        def.width,
+        def.height
+      );
     },
   };
 }

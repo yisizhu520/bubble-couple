@@ -110,11 +110,14 @@ export const SPARK_RADIUS = 4;
 export const EXPLOSION_INSET = 8;
 
 // Eyes (shared by players and enemies)
-export const EYE_OFFSET_X = 6;
-export const EYE_OFFSET_Y = 4;
+// For SVG sprites: eyes are positioned at (12,14) and (20,14) in a 32x32 viewBox
+// When rendered at PLAYER_SIZE, positions scale proportionally
+// Eye offset from center: 4 units in 32-unit space = 4.5 in 36-unit space
+export const EYE_OFFSET_X = 4.5;  // Horizontal distance from center to each eye
+export const EYE_OFFSET_Y = 2.25; // Vertical distance from center to eyes (eyes are above center)
 export const EYE_RADIUS = 5;
-export const PUPIL_RADIUS = 2;
-export const PUPIL_MOVE = 2;
+export const PUPIL_RADIUS = 2.25; // Scaled from 2 in 32-unit space
+export const PUPIL_MOVE = 2;      // How far pupil moves when looking in a direction
 
 // HP Bar
 export const HP_BAR_WIDTH = 32;
