@@ -193,8 +193,8 @@ Bubble Couple is a real-time multiplayer Bomberman-style game built with React +
 ## Architecture
 
 ### Dual-Mode Design
-- **Local Mode**: Self-contained game engine in `hooks/useGameEngine.ts` with React refs for 60 FPS rendering
-- **Online Mode**: Colyseus authoritative server (`server/src/rooms/BubbleRoom.ts`) with client prediction in `hooks/useOnlineGame.ts`
+- **Local Mode**: Self-contained game engine in `client/src/hooks/useGameEngine.ts` with React refs for 60 FPS rendering
+- **Online Mode**: Colyseus authoritative server (`server/src/rooms/BubbleRoom.ts`) with client prediction in `client/src/hooks/useOnlineGame.ts`
 
 ### Critical Performance Pattern
 **Always use React refs for game state, never useState for game loop data.** This avoids re-render overhead:
@@ -239,24 +239,26 @@ Only use `useState` for UI-only data (HUD, menus). The game loop updates refs di
 
 ### Run Locally (Local Multiplayer Only)
 ```bash
-npm install
-npm run dev  # Vite dev server on port 3000
+pnpm install
+pnpm dev  # Vite dev server on port 3000
 ```
 
 ### Run with Online Multiplayer
 ```bash
 # Terminal 1: Start game server
-cd server && npm install
-npm run dev  # Colyseus server on port 2567
+pnpm dev:server  # Colyseus server on port 2567
 
 # Terminal 2: Start frontend
-npm run dev
+pnpm dev
+
+# Or run both together
+pnpm dev:all
 ```
 
 ### Build & Deploy
 ```bash
 # Production build (frontend only)
-npm run build
+pnpm build
 
 # Docker deployment (full stack)
 docker-compose up -d  # Runs nginx (frontend:3000) + Colyseus (server:2567)
@@ -269,11 +271,11 @@ docker-compose up -d  # Runs nginx (frontend:3000) + Colyseus (server:2567)
 ## Project Conventions
 
 ### File Organization
-- `hooks/`: Custom React hooks for game logic (use\*Engine, use\*Game, use\*Gamepad)
-- `components/`: React components (Canvas, HUD, Menu, Online\*)
+- `client/src/hooks/`: Custom React hooks for game logic (use\*Engine, use\*Game, use\*Gamepad)
+- `client/src/components/`: React components (Canvas, HUD, Menu, Online\*)
 - `server/src/rooms/`: Colyseus room logic and Colyseus Schema definitions
 - `server/src/utils/`: Shared server-side game logic (mirrored from client utils)
-- `types.ts` & `constants.ts`: Shared across client/server (keep in sync!)
+- `client/src/types.ts` & `client/src/constants.ts`: Shared across client/server (keep in sync!)
 
 ### Colyseus Schema Pattern
 Server uses `@colyseus/schema` decorators for automatic state sync:
@@ -341,7 +343,7 @@ Auto-detected via `'ontouchstart' in window` in `App.tsx`. Touch controls render
 
 ## References
 
-- Main game loop: `hooks/useGameEngine.ts` (lines 1-893)
+- Main game loop: `client/src/hooks/useGameEngine.ts` (lines 1-893)
 - Server room logic: `server/src/rooms/BubbleRoom.ts`
 - Colyseus docs: https://docs.colyseus.io/
-- Shared types: `types.ts`, constants: `constants.ts`
+- Shared types: `client/src/types.ts`, constants: `client/src/constants.ts`

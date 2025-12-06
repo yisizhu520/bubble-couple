@@ -1,5 +1,5 @@
 {
-  "name": "bubble-couple-server",
+  "name": "server",
   "version": "1.0.0",
   "description": "Colyseus game server for Bubble Couple",
   "scripts": {

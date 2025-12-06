@@ -196,42 +196,49 @@ Bubble Couple is a 2-player cooperative/competitive bomberman-style game built w
 
 ### Development
 ```bash
-# Install dependencies
-npm install
+# Install dependencies (from root)
+pnpm install
 
-# Start development server (runs on port 3000)
-npm run dev
+# Start frontend development server (runs on port 3000)
+pnpm dev
+
+# Start game server (runs on port 2567)
+pnpm dev:server
+
+# Start both frontend and server
+pnpm dev:all
 
 # Build for production
-npm run build
+pnpm build
 
 # Preview production build
-npm run preview
+pnpm preview
 ```
 
 ### Docker (for deployment)
 ```bash
-# Build Docker image
-docker build -t bubble-couple .
+# Build and run with Docker Compose (recommended)
+docker-compose up -d
 
-# Run with Docker
+# Build frontend Docker image only
+docker build -t bubble-couple ./client
+
+# Run frontend container
 docker run -p 3000:80 bubble-couple
-
-# Or use Docker Compose
-docker-compose up
 ```
 
 ## Game Architecture
 
 ### Core Systems
-- **Game Engine**: `hooks/useGameEngine.ts` - Main game loop and state management using React refs for performance
-- **Game Canvas**: `components/GameCanvas.tsx` - WebGL/Canvas rendering for game entities
-- **Input System**: Keyboard and gamepad support with mapping in `constants.ts`
-- **Audio System**: `utils/audio.ts` - Sound effects and background music management
+- **Game Engine**: `client/src/hooks/useGameEngine.ts` - Main game loop and state management using React refs for performance
+- **Game Canvas**: `client/src/components/GameCanvas.tsx` - WebGL/Canvas rendering for game entities
+- **Input System**: Keyboard and gamepad support with mapping in `client/src/constants.ts`
+- **Audio System**: `client/src/utils/audio.ts` - Sound effects and background music management
 - **Physics/Collision**: Grid-based movement with corner sliding and bomb kicking mechanics
+- **Game Server**: `server/src/rooms/BubbleRoom.ts` - Colyseus multiplayer server
 
 ### Game State
-The game uses a centralized `GameState` interface in `types.ts` containing:
+The game uses a centralized `GameState` interface in `client/src/types.ts` containing:
 - Grid system with walls and items
 - Players with stats (speed, bomb range, power-ups)
 - Enemies with AI behaviors
@@ -239,7 +246,7 @@ The game uses a centralized `GameState` interface in `types.ts` containing:
 - Level progression system
 
 ### Level Design
-- Pre-configured levels in `constants.ts` with enemy spawning and boss fights
+- Pre-configured levels in `client/src/constants.ts` with enemy spawning and boss fights
 - Progressive difficulty with wall density and enemy types
 - Boss mechanics: Slime spawns minions, Mecha places mega bombs
 
@@ -248,7 +255,7 @@ The game uses a centralized `GameState` interface in `types.ts` containing:
 - **PvP** (Player vs Player): 1v1 competitive mode
 
 ### Mobile Support
-- Touch controls via `components/TouchControls.tsx`
+- Touch controls via `client/src/components/TouchControls.tsx`
 - Responsive layout with neobrutalist styling
 - Auto-detects mobile devices and adapts UI
 
@@ -280,8 +287,10 @@ The game uses a centralized `GameState` interface in `types.ts` containing:
 - `GEMINI_API_KEY` - Optional Gemini API key for AI features (configured in vite.config.ts)
 
 ## File Structure
-- `src/types.ts` - All type definitions
-- `src/constants.ts` - Game configuration and level data
-- `src/hooks/` - Custom React hooks for game logic
-- `src/components/` - React components for UI and game rendering
-- `src/utils/` - Utility functions for game mechanics and audio
+- `client/src/types.ts` - All type definitions
+- `client/src/constants.ts` - Game configuration and level data
+- `client/src/hooks/` - Custom React hooks for game logic
+- `client/src/components/` - React components for UI and game rendering
+- `client/src/utils/` - Utility functions for game mechanics and audio
+- `server/src/rooms/` - Colyseus game room logic
+- `server/src/utils/` - Server-side game utilities

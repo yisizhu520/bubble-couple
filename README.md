@@ -39,47 +39,47 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Fqc9uDMOooISdVLuRvGoX8
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:**  Node.js, pnpm
 
 ### Frontend Only (Local Multiplayer)
 
 1. Install dependencies:
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. Run the app:
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 ### With Online Multiplayer
 
-1. Install frontend dependencies:
+1. Install all dependencies:
    ```bash
-   npm install
+   pnpm install
    ```
 
-2. Install server dependencies:
+2. Start the game server (in one terminal):
    ```bash
-   cd server && npm install
+   pnpm dev:server
    ```
 
-3. Start the game server (in one terminal):
+3. Start the frontend (in another terminal):
    ```bash
-   cd server && npm run dev
+   pnpm dev
    ```
 
-4. Start the frontend (in another terminal):
+4. Or start both simultaneously:
    ```bash
-   npm run dev
+   pnpm dev:all
    ```
 
 5. Access the game at `http://localhost:3000`
 
 ### Environment Variables
 
-Create a `.env.local` file for custom configuration:
+Create a `.env.local` file in `client/` for custom configuration:
 
 ```env
 # WebSocket URL for Colyseus server
@@ -128,26 +128,24 @@ docker-compose up -d
 
 ```
 bubble-couple/
-├── components/         # React UI components
-│   ├── GameCanvas.tsx  # Local game renderer
-│   ├── OnlineGame.tsx  # Online game wrapper
-│   ├── Lobby.tsx       # Online lobby/matchmaking
-│   └── ...
-├── hooks/
-│   ├── useGameEngine.ts    # Local game engine
-│   └── useOnlineGame.ts    # Online connection hook
-├── server/             # Colyseus game server
+├── client/                 # Frontend (React + Vite)
 │   ├── src/
-│   │   ├── index.ts        # Server entry point
-│   │   ├── rooms/
-│   │   │   ├── BubbleRoom.ts   # Game room logic
-│   │   │   └── schema/         # State schemas
-│   │   └── utils/
-│   │       └── gameLogic.ts    # Shared game logic
+│   │   ├── components/     # React UI components
+│   │   ├── hooks/          # Game engine hooks
+│   │   ├── utils/          # Utility functions
+│   │   ├── types.ts        # Type definitions
+│   │   └── constants.ts    # Game constants
+│   ├── public/             # Static assets
+│   ├── package.json
+│   └── vite.config.ts
+├── server/                 # Backend (Colyseus)
+│   ├── src/
+│   │   ├── rooms/          # Game room logic
+│   │   └── utils/          # Server utilities
 │   └── package.json
-├── types.ts            # Type definitions
-├── constants.ts        # Game constants
-└── ...
+├── docker-compose.yml
+├── pnpm-workspace.yaml
+└── package.json            # Workspace root
 ```
 
 ## Deploy to Dokploy
