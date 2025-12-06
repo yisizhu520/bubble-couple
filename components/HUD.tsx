@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { GameState, PlayerState, GameMode } from '../types';
-import { Heart, Bomb, Zap, Skull, Clock, Volume2, VolumeX, Flag, Star, Trophy, ArrowRight, LogOut } from 'lucide-react';
+import { Bomb, Zap, Volume2, VolumeX, Flag, Star, ArrowRight, LogOut } from 'lucide-react';
 import { HEADER_HEIGHT } from '../constants';
 import { audioManager } from '../utils/audio';
 
@@ -98,23 +98,12 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
                  {isMuted ? <VolumeX size={16} className="text-black sm:w-5 sm:h-5" /> : <Volume2 size={16} className="text-black sm:w-5 sm:h-5" />}
              </button>
 
-             <div className="flex flex-col items-center justify-center">
-                 {/* Level Indicator */}
-                 <div className="flex items-center gap-1 bg-black text-white px-1 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold mb-1 border border-black -rotate-1">
-                     <Flag size={8} className="sm:w-2.5 sm:h-2.5" />
-                     <span className="hidden sm:inline">STAGE {hudState.level}</span>
-                     <span className="inline sm:hidden">{hudState.level}</span>
-                 </div>
-
-                 <div className="flex items-center justify-center bg-white px-2 sm:px-4 py-0.5 sm:py-1 border-[2px] sm:border-[3px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                    <div className="flex items-center gap-1 sm:gap-2">
-                        <Clock size={12} className="text-black sm:w-4 sm:h-4" strokeWidth={3} />
-                        <span className={`text-base sm:text-xl font-mono font-black ${hudState.timeLeft <= 30 ? 'text-red-600' : 'text-black'}`}>
-                            {Math.floor(hudState.timeLeft)}s
-                        </span>
-                    </div>
-                </div>
-            </div>
+             {/* Level Indicator */}
+             <div className="flex items-center gap-1 bg-black text-white px-1 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold border border-black -rotate-1">
+                 <Flag size={8} className="sm:w-2.5 sm:h-2.5" />
+                 <span className="hidden sm:inline">STAGE {hudState.level}</span>
+                 <span className="inline sm:hidden">{hudState.level}</span>
+             </div>
         </div>
 
         {/* P2 Stats */}

@@ -28,14 +28,25 @@ const App: React.FC = () => {
 
     const calculateScale = () => {
       const mobile = checkMobile();
-      if (mobile) {
-        // Calculate scale to fit screen width with some padding
-        const availableWidth = window.innerWidth - 16; // 8px padding on each side
-        const newScale = Math.min(1, availableWidth / gameWidth);
-        setScale(newScale);
-      } else {
-        setScale(1);
-      }
+      
+      // Calculate available space with padding
+      // Account for borders (8px total) and shadow (12px) on desktop
+      const horizontalPadding = mobile ? 16 : 80; // 16 on mobile, 80 on desktop (padding + shadow + borders)
+      const verticalPadding = mobile ? 24 : 80; // Same for height
+      
+      const availableWidth = window.innerWidth - horizontalPadding;
+      const availableHeight = window.innerHeight - verticalPadding;
+      
+      // Calculate scale for both dimensions
+      // On mobile, HUD is separate but still uses same scale, so use totalHeight for both
+      const scaleX = availableWidth / gameWidth;
+      const scaleY = availableHeight / totalHeight;
+      
+      // Use the smaller scale to ensure game fits completely without clipping
+      // Cap at 1 to avoid unnecessary upscaling
+      const newScale = Math.min(1, scaleX, scaleY);
+      setScale(newScale);
+      
       return mobile;
     };
     
@@ -47,7 +58,7 @@ const App: React.FC = () => {
     window.addEventListener('resize', handleResize);
     
     return () => window.removeEventListener('resize', handleResize);
-  }, [gameWidth]);
+  }, [gameWidth, totalHeight]);
 
   const handleGameOver = (winningId: number | null) => {
     setWinner(winningId);
