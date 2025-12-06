@@ -117,7 +117,11 @@ export const useGameEngine = (mode: GameMode, onGameOver: (winner: number | null
         hasShield: false,
         ghostTimer: 0,
       },
-      {
+    ];
+
+    // Only add Player 2 for PVE (co-op) and PVP modes
+    if (mode === GameMode.PVE || mode === GameMode.PVP) {
+      players.push({
         id: 2,
         x: p2Start.x,
         y: p2Start.y,
@@ -134,12 +138,12 @@ export const useGameEngine = (mode: GameMode, onGameOver: (winner: number | null
         canKick: false,
         hasShield: false,
         ghostTimer: 0,
-      }
-    ];
+      });
+    }
 
-    // Spawn Enemies based on Level Config
+    // Spawn Enemies based on Level Config (for PVE and SOLO modes)
     const enemies: Enemy[] = [];
-    if (mode === GameMode.PVE) {
+    if (mode === GameMode.PVE || mode === GameMode.SOLO) {
         config.enemies.forEach((type, idx) => {
              const e = spawnEnemy(grid, enemies, type, `init-${idx}`);
              if (e) enemies.push(e);
@@ -169,6 +173,7 @@ export const useGameEngine = (mode: GameMode, onGameOver: (winner: number | null
     if (mode === GameMode.PVP) {
         audioManager.playBGM(MusicTheme.PVP);
     } else {
+        // PVE and SOLO share the same BGM
         audioManager.playBGM(MusicTheme.PVE);
     }
   }, [mode]);
@@ -504,7 +509,7 @@ export const useGameEngine = (mode: GameMode, onGameOver: (winner: number | null
     handleGamepadBombInput();
 
     // --- 2. Enemy AI & Boss Logic ---
-    if (mode === GameMode.PVE) {
+    if (mode === GameMode.PVE || mode === GameMode.SOLO) {
         const config = LEVEL_CONFIGS[state.level - 1] || LEVEL_CONFIGS[0];
 
         // Spawn Boss if wave cleared
@@ -774,7 +779,7 @@ export const useGameEngine = (mode: GameMode, onGameOver: (winner: number | null
     });
 
     // Enemy Damage (Explosion)
-    if (mode === GameMode.PVE) {
+    if (mode === GameMode.PVE || mode === GameMode.SOLO) {
         const survivingEnemies: Enemy[] = [];
         state.enemies.forEach(enemy => {
             if (enemy.invincibleTimer > 0) {
@@ -809,7 +814,7 @@ export const useGameEngine = (mode: GameMode, onGameOver: (winner: number | null
     }
 
     // Player vs Enemy Collision
-    if (mode === GameMode.PVE) {
+    if (mode === GameMode.PVE || mode === GameMode.SOLO) {
         state.players.forEach(p => {
             if (p.state === PlayerState.DEAD || p.invincibleTimer > 0) return;
             const hitEnemy = state.enemies.some(e => checkPlayerCollision(p, e));
@@ -817,8 +822,8 @@ export const useGameEngine = (mode: GameMode, onGameOver: (winner: number | null
         });
     }
 
-    // Player vs Player
-    if (checkPlayerCollision(state.players[0], state.players[1])) {
+    // Player vs Player (only in modes with 2 players)
+    if (state.players.length > 1 && checkPlayerCollision(state.players[0], state.players[1])) {
        const p1 = state.players[0];
        const p2 = state.players[1];
        if (p1.state === PlayerState.NORMAL && p2.state === PlayerState.TRAPPED) {
@@ -833,7 +838,7 @@ export const useGameEngine = (mode: GameMode, onGameOver: (winner: number | null
     const activePlayers = state.players.filter(p => p.state !== PlayerState.DEAD);
     const trappedPlayers = state.players.filter(p => p.state === PlayerState.TRAPPED);
 
-    if (mode === GameMode.PVE) {
+    if (mode === GameMode.PVE || mode === GameMode.SOLO) {
         const config = LEVEL_CONFIGS[state.level - 1] || LEVEL_CONFIGS[0];
         // Condition: Enemies cleared AND (No boss expected OR Boss was spawned and killed)
         const allEnemiesDead = state.enemies.length === 0;
@@ -842,7 +847,7 @@ export const useGameEngine = (mode: GameMode, onGameOver: (winner: number | null
         if (allEnemiesDead && bossConditionMet && !state.gameOver) {
             if (state.level >= LEVEL_CONFIGS.length) {
                 state.gameOver = true;
-                state.winner = 12; // PVE Win Code
+                state.winner = 12; // PVE/SOLO Win Code
             } else if (!state.isLevelClear) {
                 // Trigger Level Clear Screen
                 state.isLevelClear = true;

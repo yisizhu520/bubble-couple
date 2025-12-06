@@ -31,8 +31,9 @@ export enum Direction {
 
 export enum GameMode {
   MENU = 'MENU',
-  PVE = 'PVE', // Co-op vs AI
+  PVE = 'PVE', // Co-op vs AI (2 players)
   PVP = 'PVP', // 1v1
+  SOLO = 'SOLO', // Single player campaign
 }
 
 export enum EnemyType {

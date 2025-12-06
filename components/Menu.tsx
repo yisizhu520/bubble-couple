@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameMode, SoundType } from '../types';
-import { HeartHandshake, Swords, RotateCcw } from 'lucide-react';
+import { HeartHandshake, Swords, RotateCcw, User } from 'lucide-react';
 import { audioManager } from '../utils/audio';
 
 interface MenuProps {
@@ -43,17 +43,17 @@ const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode }) => 
              </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mb-6 sm:mb-12 w-full max-w-md sm:max-w-none">
-          {/* PVP Button */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-6 sm:mb-12 w-full max-w-md sm:max-w-none">
+          {/* Solo Button */}
           <button
-            onClick={() => handleModeSelect(GameMode.PVP)}
+            onClick={() => handleModeSelect(GameMode.SOLO)}
             onMouseEnter={() => audioManager.play(SoundType.CLICK)}
-            className="group w-full sm:w-48 flex flex-col items-center gap-2 sm:gap-4 bg-[#FF6B6B] border-[3px] border-black p-4 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="group w-full sm:w-44 flex flex-col items-center gap-2 sm:gap-4 bg-[#FFD93D] border-[3px] border-black p-4 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
-            <Swords size={36} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
+            <User size={36} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
             <div className="text-center">
-              <h3 className="text-xl sm:text-2xl font-black text-black uppercase">PvP</h3>
-              <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">Fight Partner</p>
+              <h3 className="text-xl sm:text-2xl font-black text-black uppercase">Solo</h3>
+              <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">单人闯关</p>
             </div>
           </button>
 
@@ -61,12 +61,25 @@ const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode }) => 
           <button
             onClick={() => handleModeSelect(GameMode.PVE)}
             onMouseEnter={() => audioManager.play(SoundType.CLICK)}
-            className="group w-full sm:w-48 flex flex-col items-center gap-2 sm:gap-4 bg-[#4ECDC4] border-[3px] border-black p-4 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="group w-full sm:w-44 flex flex-col items-center gap-2 sm:gap-4 bg-[#4ECDC4] border-[3px] border-black p-4 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
             <HeartHandshake size={36} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
             <div className="text-center">
               <h3 className="text-xl sm:text-2xl font-black text-black uppercase">PvE</h3>
-              <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">Co-op Mode</p>
+              <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">双人合作</p>
+            </div>
+          </button>
+
+          {/* PVP Button */}
+          <button
+            onClick={() => handleModeSelect(GameMode.PVP)}
+            onMouseEnter={() => audioManager.play(SoundType.CLICK)}
+            className="group w-full sm:w-44 flex flex-col items-center gap-2 sm:gap-4 bg-[#FF6B6B] border-[3px] border-black p-4 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+          >
+            <Swords size={36} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
+            <div className="text-center">
+              <h3 className="text-xl sm:text-2xl font-black text-black uppercase">PvP</h3>
+              <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">双人对战</p>
             </div>
           </button>
         </div>
@@ -76,16 +89,16 @@ const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode }) => 
             <h4 className="text-center text-black font-black uppercase text-base sm:text-lg mb-3 sm:mb-4 bg-yellow-300 border-2 border-black inline-block px-2 transform -rotate-1 mx-auto block">How to Play</h4>
             <div className="grid grid-cols-2 gap-4 sm:gap-8 text-xs sm:text-sm">
                 <div className="space-y-1 sm:space-y-2">
-                    <strong className="block text-black text-sm sm:text-lg bg-blue-300 border-2 border-black text-center mb-1 sm:mb-2 px-1 py-0.5">P1</strong>
-                    <div className="flex justify-between text-black font-bold"><span className="text-xs">Move</span> <span className="font-mono border border-black bg-gray-100 px-1 text-xs">WASD</span></div>
-                    <div className="flex justify-between text-black font-bold"><span className="text-xs">Bomb</span> <span className="font-mono border border-black bg-gray-100 px-1 text-xs">Space</span></div>
-                    <div className="text-[10px] text-gray-600 mt-2 hidden sm:block">Or touch controls</div>
+                    <strong className="block text-black text-sm sm:text-lg bg-blue-300 border-2 border-black text-center mb-1 sm:mb-2 px-1 py-0.5">P1 / Solo</strong>
+                    <div className="flex justify-between text-black font-bold"><span className="text-xs">移动</span> <span className="font-mono border border-black bg-gray-100 px-1 text-xs">WASD</span></div>
+                    <div className="flex justify-between text-black font-bold"><span className="text-xs">放炸弹</span> <span className="font-mono border border-black bg-gray-100 px-1 text-xs">Space</span></div>
+                    <div className="text-[10px] text-gray-600 mt-2 hidden sm:block">支持触屏 / 手柄</div>
                 </div>
                 <div className="space-y-1 sm:space-y-2">
                     <strong className="block text-black text-sm sm:text-lg bg-red-300 border-2 border-black text-center mb-1 sm:mb-2 px-1 py-0.5">P2</strong>
-                    <div className="flex justify-between text-black font-bold"><span className="text-xs">Move</span> <span className="font-mono border border-black bg-gray-100 px-1 text-xs">Arrows</span></div>
-                    <div className="flex justify-between text-black font-bold"><span className="text-xs">Bomb</span> <span className="font-mono border border-black bg-gray-100 px-1 text-xs">Enter</span></div>
-                    <div className="text-[10px] text-gray-600 mt-2 hidden sm:block">Or gamepad</div>
+                    <div className="flex justify-between text-black font-bold"><span className="text-xs">移动</span> <span className="font-mono border border-black bg-gray-100 px-1 text-xs">Arrows</span></div>
+                    <div className="flex justify-between text-black font-bold"><span className="text-xs">放炸弹</span> <span className="font-mono border border-black bg-gray-100 px-1 text-xs">Enter</span></div>
+                    <div className="text-[10px] text-gray-600 mt-2 hidden sm:block">支持手柄</div>
                 </div>
             </div>
         </div>
@@ -94,14 +107,26 @@ const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode }) => 
   }
 
   if (winner !== null) {
+    const isSoloMode = gameMode === GameMode.SOLO;
+    const getTitle = () => {
+      if (winner === 0) return "GAME OVER";
+      if (winner === 12) return "VICTORY!";
+      return `P${winner} WINS!`;
+    };
+    const getSubtitle = () => {
+      if (winner === 0) return isSoloMode ? "英雄陨落..." : "You both died...";
+      if (winner === 12) return isSoloMode ? "恭喜通关！" : "Mission Accomplished!";
+      return "Kneel before the champion!";
+    };
+
     return (
       <div className="absolute inset-0 bg-yellow-300 flex flex-col items-center justify-center p-4 sm:p-8 z-50">
         <div className="bg-white border-[3px] sm:border-[4px] border-black p-6 sm:p-12 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center max-w-2xl w-full">
             <h2 className="text-3xl sm:text-6xl font-black mb-3 sm:mb-4 uppercase text-black italic">
-                {winner === 0 ? "GAME OVER" : winner === 12 ? "VICTORY!" : `P${winner} WINS!`}
+                {getTitle()}
             </h2>
             <p className="text-lg sm:text-2xl text-black font-bold mb-6 sm:mb-10 border-b-2 sm:border-b-4 border-black inline-block pb-1 sm:pb-2">
-                {winner === 0 ? "You both died..." : winner === 12 ? "Mission Accomplished!" : "Kneel before the champion!"}
+                {getSubtitle()}
             </p>
             
             <div className="flex flex-col gap-3 sm:gap-4 items-center">

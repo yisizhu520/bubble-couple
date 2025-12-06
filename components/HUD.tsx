@@ -79,7 +79,7 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
     >
         {/* P1 Stats */}
         <div className="flex-1 min-w-0">
-            {p1 && renderPlayerStats(p1, "P1 (YOU)")}
+            {p1 && renderPlayerStats(p1, p2 ? "P1 (YOU)" : "HERO")}
         </div>
         
         {/* Center: Timer & Controls */}
@@ -106,9 +106,9 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
              </div>
         </div>
 
-        {/* P2 Stats */}
+        {/* P2 Stats (only show if P2 exists) */}
         <div className="flex-1 flex justify-end min-w-0">
-            {p2 && renderPlayerStats(p2, "P2 (ALLY)", true)}
+            {p2 ? renderPlayerStats(p2, "P2 (ALLY)", true) : <div></div>}
         </div>
 
         {/* Level Transition Overlay */}
@@ -124,29 +124,29 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
                      <div className="bg-gray-50 border-[3px] border-black p-3 sm:p-4 mb-4 sm:mb-8">
                         <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-2 text-[10px] sm:text-xs font-black text-black uppercase pb-2 border-b-2 border-black">
                             <span className="text-left">Player</span>
-                            <span className="text-center">Kills</span>
-                            <span className="text-right">Status</span>
+                            <span className="text-center">击杀</span>
+                            <span className="text-right">状态</span>
                         </div>
                         
                         {/* P1 */}
                         {p1 && (
-                            <div className="grid grid-cols-3 gap-2 sm:gap-4 py-1 sm:py-2 items-center border-b border-gray-300">
+                            <div className={`grid grid-cols-3 gap-2 sm:gap-4 py-1 sm:py-2 items-center ${p2 ? 'border-b border-gray-300' : ''}`}>
                                 <div className="flex items-center gap-1 sm:gap-2 text-black font-bold text-xs sm:text-base">
-                                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 border border-black"></div> P1
+                                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 border border-black"></div> {p2 ? 'P1' : 'HERO'}
                                 </div>
                                 <div className="text-center font-mono text-lg sm:text-xl font-bold">{p1.score}</div>
-                                <div className="text-right text-[10px] sm:text-xs font-black text-green-600 bg-green-100 border border-green-600 px-0.5 sm:px-1 inline-block">ALIVE</div>
+                                <div className="text-right text-[10px] sm:text-xs font-black text-green-600 bg-green-100 border border-green-600 px-0.5 sm:px-1 inline-block">存活</div>
                             </div>
                         )}
                         
-                        {/* P2 */}
+                        {/* P2 (only show if exists) */}
                         {p2 && (
                             <div className="grid grid-cols-3 gap-2 sm:gap-4 py-1 sm:py-2 items-center">
                                 <div className="flex items-center gap-1 sm:gap-2 text-black font-bold text-xs sm:text-base">
                                     <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 border border-black"></div> P2
                                 </div>
                                 <div className="text-center font-mono text-lg sm:text-xl font-bold">{p2.score}</div>
-                                <div className="text-right text-[10px] sm:text-xs font-black text-green-600 bg-green-100 border border-green-600 px-0.5 sm:px-1 inline-block">ALIVE</div>
+                                <div className="text-right text-[10px] sm:text-xs font-black text-green-600 bg-green-100 border border-green-600 px-0.5 sm:px-1 inline-block">存活</div>
                             </div>
                         )}
                      </div>
