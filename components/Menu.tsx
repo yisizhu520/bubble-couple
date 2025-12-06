@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameMode, SoundType } from '../types';
-import { HeartHandshake, Swords, RotateCcw, User } from 'lucide-react';
+import { HeartHandshake, Swords, RotateCcw, User, Wifi } from 'lucide-react';
 import { audioManager } from '../utils/audio';
 
 interface MenuProps {
@@ -8,14 +8,21 @@ interface MenuProps {
   winner: number | null;
   onRestart: () => void;
   gameMode: GameMode;
+  onOnline?: () => void;
 }
 
-const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode }) => {
+const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode, onOnline }) => {
   
   const handleModeSelect = (mode: GameMode) => {
     audioManager.init(); // Unlock AudioContext
     audioManager.play(SoundType.CLICK);
     setMode(mode);
+  };
+
+  const handleOnlineClick = () => {
+    audioManager.init();
+    audioManager.play(SoundType.CLICK);
+    onOnline?.();
   };
 
   const handleRestartClick = () => {
@@ -80,6 +87,19 @@ const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode }) => 
             <div className="text-center">
               <h3 className="text-xl sm:text-2xl font-black text-black uppercase">PvP</h3>
               <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">双人对战</p>
+            </div>
+          </button>
+
+          {/* Online Button */}
+          <button
+            onClick={handleOnlineClick}
+            onMouseEnter={() => audioManager.play(SoundType.CLICK)}
+            className="group w-full sm:w-44 flex flex-col items-center gap-2 sm:gap-4 bg-[#A78BFA] border-[3px] border-black p-4 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+          >
+            <Wifi size={36} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
+            <div className="text-center">
+              <h3 className="text-xl sm:text-2xl font-black text-black uppercase">Online</h3>
+              <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">联机对战</p>
             </div>
           </button>
         </div>

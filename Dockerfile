@@ -5,6 +5,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Build argument for WebSocket URL (passed at build time)
+ARG VITE_WS_URL=ws://localhost:2567
+
+# Set environment variable for Vite build
+ENV VITE_WS_URL=$VITE_WS_URL
+
 # Copy all files first (including package.json and package-lock.json)
 COPY . .
 

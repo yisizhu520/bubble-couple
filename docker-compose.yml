@@ -1,11 +1,29 @@
 services:
-  bubble-couple:
+  # Frontend - Nginx serving static files
+  frontend:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VITE_WS_URL=${VITE_WS_URL:-ws://localhost:2567}
     ports:
       - "3000:80"
     environment:
       - NODE_ENV=production
     restart: unless-stopped
-    container_name: bubble-couple
+    container_name: bubble-couple-frontend
+    depends_on:
+      - colyseus
+
+  # Colyseus Game Server
+  colyseus:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "2567:2567"
+    environment:
+      - NODE_ENV=production
+      - PORT=2567
+    restart: unless-stopped
+    container_name: bubble-couple-server

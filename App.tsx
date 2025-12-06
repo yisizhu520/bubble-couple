@@ -1,18 +1,29 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { GameMode } from './types';
 import { useGameEngine } from './hooks/useGameEngine';
+import { useOnlineGame } from './hooks/useOnlineGame';
 import GameCanvas from './components/GameCanvas';
 import HUD from './components/HUD';
 import Menu from './components/Menu';
 import TouchControls from './components/TouchControls';
+import Lobby from './components/Lobby';
+import OnlineGame from './components/OnlineGame';
 import { GRID_W, GRID_H, TILE_SIZE, HEADER_HEIGHT } from './constants';
 
+type AppScreen = 'menu' | 'local-game' | 'online-lobby' | 'online-game';
+
 const App: React.FC = () => {
+  const [screen, setScreen] = useState<AppScreen>('menu');
   const [mode, setMode] = useState<GameMode>(GameMode.MENU);
+  const [onlineMode, setOnlineMode] = useState<GameMode>(GameMode.PVP);
   const [winner, setWinner] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [scale, setScale] = useState(1);
+
+  // Online game hook - lifted to App level to persist across screens
+  const onlineGame = useOnlineGame();
+
 
   // Calculate explicit dimensions
   const gameWidth = GRID_W * TILE_SIZE;
@@ -74,21 +85,108 @@ const App: React.FC = () => {
   const handleModeSelect = (newMode: GameMode) => {
     setMode(newMode);
     setWinner(null);
+    setScreen('local-game');
   };
 
   const handleExit = () => {
     setMode(GameMode.MENU);
     setWinner(null);
+    setScreen('menu');
   };
+
+  const handleOnlineClick = useCallback(() => {
+    setScreen('online-lobby');
+  }, []);
+
+  const handleLobbyBack = useCallback(() => {
+    setScreen('menu');
+  }, []);
+
+  const handleOnlineGameStart = useCallback((gameMode: GameMode) => {
+    setOnlineMode(gameMode);
+    setScreen('online-game');
+  }, []);
+
+  const handleOnlineGameExit = useCallback(() => {
+    setScreen('online-lobby');
+  }, []);
 
   // Calculate the scaled dimensions for the container wrapper
   const scaledWidth = gameWidth * scale;
   const scaledHeight = (isMobile ? gameHeight : totalHeight) * scale;
 
+  // Render online lobby
+  if (screen === 'online-lobby') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#E0E7F1]">
+        {/* Wrapper div with scaled dimensions for proper layout and hit detection */}
+        <div 
+          className="relative"
+          style={{ 
+            width: gameWidth * scale, 
+            height: totalHeight * scale,
+          }}
+        >
+          <div 
+            className="relative bg-white border-[3px] sm:border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
+            style={{ 
+              width: gameWidth, 
+              height: totalHeight,
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+            }}
+          >
+            <Lobby 
+              onBack={handleLobbyBack} 
+              onGameStart={handleOnlineGameStart}
+              onlineGame={onlineGame}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render online game
+  if (screen === 'online-game') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#E0E7F1]">
+        {/* Wrapper div with scaled dimensions for proper layout and hit detection */}
+        <div 
+          className="relative"
+          style={{ 
+            width: gameWidth * scale, 
+            height: totalHeight * scale,
+          }}
+        >
+          <div 
+            className="relative bg-white border-[3px] sm:border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
+            style={{ 
+              width: gameWidth, 
+              height: totalHeight,
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+            }}
+          >
+            <OnlineGame 
+              mode={onlineMode}
+              onExit={handleOnlineGameExit}
+              onlineGame={onlineGame}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Local game or menu
+  const showLocalGame = screen === 'local-game' || (screen === 'menu' && mode !== GameMode.MENU);
+  const showMenu = screen === 'menu' && mode === GameMode.MENU;
+
   return (
     <div className={`min-h-screen flex flex-col items-center select-none overflow-hidden ${isMobile ? 'justify-start pt-2' : 'justify-center'}`}>
       {/* Mobile HUD - Fixed at top, full width */}
-      {isMobile && mode !== GameMode.MENU && (
+      {isMobile && showLocalGame && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-[#E0E7F1]" style={{ height: HEADER_HEIGHT * scale }}>
           <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: gameWidth }}>
             <HUD hudState={hudState} onNextLevel={proceedToNextLevel} onExit={handleExit} />
@@ -105,7 +203,7 @@ const App: React.FC = () => {
         style={{ 
           width: scaledWidth, 
           height: scaledHeight,
-          marginTop: isMobile && mode !== GameMode.MENU ? HEADER_HEIGHT * scale + 4 : 0,
+          marginTop: isMobile && showLocalGame ? HEADER_HEIGHT * scale + 4 : 0,
         }}
       >
         {/* 
@@ -123,31 +221,32 @@ const App: React.FC = () => {
           }}
         >
           {/* HUD Layer - Only show in container on desktop */}
-          {!isMobile && mode !== GameMode.MENU && (
+          {!isMobile && showLocalGame && (
              <HUD hudState={hudState} onNextLevel={proceedToNextLevel} onExit={handleExit} />
           )}
           
           {/* Game Canvas Layer */}
-          {mode !== GameMode.MENU && (
+          {showLocalGame && (
              <div className={`relative flex-1 bg-white ${!isMobile ? 'border-t-[4px] border-black' : ''}`}>
                <GameCanvas gameStateRef={gameStateRef} />
              </div>
           )}
           
           {/* Menu & Overlay Layer */}
-          {(mode === GameMode.MENU || winner !== null) && (
+          {(showMenu || winner !== null) && (
               <Menu 
                   setMode={handleModeSelect} 
                   winner={winner} 
                   onRestart={handleRestart}
                   gameMode={mode}
+                  onOnline={handleOnlineClick}
               />
           )}
         </div>
       </div>
       
       {/* Touch Controls for Mobile - Only show during gameplay */}
-      {mode !== GameMode.MENU && winner === null && (
+      {showLocalGame && winner === null && (
         <TouchControls playerId={1} />
       )}
     </div>
