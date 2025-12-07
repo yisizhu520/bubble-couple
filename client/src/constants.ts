@@ -16,7 +16,7 @@ export const GHOST_DURATION_MS = 10000;
 export const GAME_DURATION_SEC = 180;
 
 // Physics
-export const BASE_SPEED = 1;
+export const BASE_SPEED = 1.5;
 export const MAX_SPEED = 6;
 export const BOMB_SLIDE_SPEED = 6;
 export const CORNER_TOLERANCE = 15; // Pixels to allow corner sliding
@@ -49,13 +49,13 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
     level: 1,
     wallDensity: 0.6,
     enemies: [EnemyType.BALLOON, EnemyType.BALLOON, EnemyType.BALLOON, EnemyType.MINION, EnemyType.MINION],
-    boss: null
+    boss: EnemyType.BOSS_SLIME
   },
   {
     level: 2,
     wallDensity: 0.55,
     enemies: [EnemyType.MINION, EnemyType.MINION, EnemyType.FROG, EnemyType.FROG, EnemyType.TANK, EnemyType.GHOST],
-    boss: null
+    boss: EnemyType.BOSS_MECHA
   },
   {
     level: 3,

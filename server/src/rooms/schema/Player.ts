@@ -9,7 +9,7 @@ export class PlayerSchema extends Schema {
   @type("string") direction: string = "DOWN"; // UP, DOWN, LEFT, RIGHT
   
   // Stats
-  @type("number") speed: number = 1;
+  @type("number") speed: number = 1.5;
   @type("number") bombRange: number = 1;
   @type("number") maxBombs: number = 1;
   @type("number") activeBombs: number = 0;
