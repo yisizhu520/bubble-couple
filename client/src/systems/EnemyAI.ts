@@ -14,7 +14,8 @@ import { audioManager } from '../utils/audio';
 // AI 行为配置
 const AI_CONFIG = {
   RANDOM_DIR_INTERVAL: { min: 2000, max: 4000 },
-  CHASE_RECALC_INTERVAL: 500,
+  CHASE_RECALC_INTERVAL: 100,  // 追踪敌人更频繁重新计算方向
+  CHASE_STUCK_ESCAPE_TIME: 300, // 撞墙后尝试随机方向的时间
   BOSS_SLIME_SPAWN_COOLDOWN: 4000,
   BOSS_MECHA_BOMB_COOLDOWN: 5000,
   BOSS_MECHA_BOMB_RANGE: 5,
@@ -51,17 +52,53 @@ function randomDirection(): Direction {
 }
 
 /**
- * 追踪玩家方向决策
+ * 追踪玩家方向决策（带智能避障）
+ * 优先选择能接近玩家且不被阻挡的方向
  */
-function chaseDirection(enemy: Enemy, target: Player): Direction {
+function chaseDirection(enemy: Enemy, target: Player, state: GameState): Direction {
   const diffX = target.x - enemy.x;
   const diffY = target.y - enemy.y;
   
-  if (Math.abs(diffX) > Math.abs(diffY)) {
-    return diffX > 0 ? Direction.RIGHT : Direction.LEFT;
-  } else {
-    return diffY > 0 ? Direction.DOWN : Direction.UP;
+  // 计算所有可能方向的优先级
+  type DirInfo = { dir: Direction; priority: number; blocked: boolean };
+  const directions: DirInfo[] = [
+    { dir: Direction.UP, priority: diffY < 0 ? Math.abs(diffY) : -1, blocked: false },
+    { dir: Direction.DOWN, priority: diffY > 0 ? Math.abs(diffY) : -1, blocked: false },
+    { dir: Direction.LEFT, priority: diffX < 0 ? Math.abs(diffX) : -1, blocked: false },
+    { dir: Direction.RIGHT, priority: diffX > 0 ? Math.abs(diffX) : -1, blocked: false },
+  ];
+  
+  // 检查每个方向是否被阻挡
+  for (const d of directions) {
+    let dx = 0, dy = 0;
+    switch (d.dir) {
+      case Direction.UP: dy = -enemy.speed; break;
+      case Direction.DOWN: dy = enemy.speed; break;
+      case Direction.LEFT: dx = -enemy.speed; break;
+      case Direction.RIGHT: dx = enemy.speed; break;
+    }
+    d.blocked = isEnemyBlocked(enemy.x + dx, enemy.y + dy, enemy, state);
   }
+  
+  // 排序：优先选择 priority 高且不被阻挡的方向
+  directions.sort((a, b) => {
+    // 未阻挡的优先
+    if (a.blocked !== b.blocked) return a.blocked ? 1 : -1;
+    // 同等阻挡状态下，priority 高的优先
+    return b.priority - a.priority;
+  });
+  
+  // 如果最佳方向被阻挡，尝试垂直/水平切换
+  const best = directions[0];
+  if (best.blocked) {
+    // 所有好方向都被阻挡，尝试随机一个未阻挡的
+    const unblocked = directions.filter(d => !d.blocked);
+    if (unblocked.length > 0) {
+      return unblocked[Math.floor(Math.random() * unblocked.length)].dir;
+    }
+  }
+  
+  return best.dir;
 }
 
 // ========== 各类型敌人 AI ==========
@@ -80,7 +117,8 @@ function updateBalloon(enemy: Enemy, state: GameState, dt: number): void {
 
   const result = updateEnemyMovement(enemy, state);
   if (result.hitWall) {
-    enemy.changeDirTimer = 0; // 撞墙立即换向
+    // 撞墙立即换向
+    enemy.direction = randomDirection();
   }
 }
 
@@ -94,7 +132,7 @@ function updateGhost(enemy: Enemy, state: GameState, dt: number): void {
   
   if (enemy.changeDirTimer <= 0) {
     if (target) {
-      enemy.direction = chaseDirection(enemy, target);
+      enemy.direction = chaseDirection(enemy, target, state);
     } else {
       enemy.direction = randomDirection();
     }
@@ -103,7 +141,9 @@ function updateGhost(enemy: Enemy, state: GameState, dt: number): void {
 
   const result = updateEnemyMovement(enemy, state);
   if (result.hitWall) {
-    enemy.changeDirTimer = 0;
+    // 撞墙后短暂尝试随机方向避障
+    enemy.direction = randomDirection();
+    enemy.changeDirTimer = AI_CONFIG.CHASE_STUCK_ESCAPE_TIME;
   }
 }
 
@@ -144,7 +184,8 @@ function updateFrog(enemy: Enemy, state: GameState, dt: number): void {
     if (tryFrogJump(enemy, state)) {
       enemy.changeDirTimer = 1000; // 跳跃后短暂冷却
     } else {
-      enemy.changeDirTimer = 0; // 无法跳跃，换向
+      // 无法跳跃，立即换向
+      enemy.direction = randomDirection();
     }
   } else {
     updateEnemyMovement(enemy, state);
@@ -175,7 +216,7 @@ function updateBossSlime(
   const target = findNearestPlayer(enemy, state.players);
   if (enemy.changeDirTimer <= 0) {
     if (target) {
-      enemy.direction = chaseDirection(enemy, target);
+      enemy.direction = chaseDirection(enemy, target, state);
     } else {
       enemy.direction = randomDirection();
     }
@@ -192,7 +233,9 @@ function updateBossSlime(
 
   const result = updateEnemyMovement(enemy, state);
   if (result.hitWall) {
-    enemy.changeDirTimer = 0;
+    // 撞墙后短暂尝试随机方向避障
+    enemy.direction = randomDirection();
+    enemy.changeDirTimer = AI_CONFIG.CHASE_STUCK_ESCAPE_TIME;
   }
 }
 
@@ -207,7 +250,7 @@ function updateBossMecha(enemy: Enemy, state: GameState, dt: number): void {
   const target = findNearestPlayer(enemy, state.players);
   if (enemy.changeDirTimer <= 0) {
     if (target) {
-      enemy.direction = chaseDirection(enemy, target);
+      enemy.direction = chaseDirection(enemy, target, state);
     } else {
       enemy.direction = randomDirection();
     }
@@ -228,7 +271,9 @@ function updateBossMecha(enemy: Enemy, state: GameState, dt: number): void {
 
   const result = updateEnemyMovement(enemy, state);
   if (result.hitWall) {
-    enemy.changeDirTimer = 0;
+    // 撞墙后短暂尝试随机方向避障
+    enemy.direction = randomDirection();
+    enemy.changeDirTimer = AI_CONFIG.CHASE_STUCK_ESCAPE_TIME;
   }
 }
 
