@@ -38,29 +38,30 @@ const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode, onOnl
 
   if (gameMode === GameMode.MENU) {
     return (
-      <div className="absolute inset-0 bg-[#FFDEE9] bg-gradient-to-br from-[#B5FFFC] to-[#FFDEE9] flex flex-col items-center justify-center p-4 sm:p-8 z-50 overflow-y-auto">
+      <div className="absolute inset-0 bg-[#FFDEE9] bg-gradient-to-br from-[#B5FFFC] to-[#FFDEE9] flex flex-col items-center justify-start sm:justify-center py-4 px-4 sm:p-8 z-50 overflow-y-auto">
         
         {/* Title Block */}
-        <div className="mb-6 sm:mb-10 bg-white border-[3px] sm:border-[4px] border-black p-4 sm:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rotate-[-2deg]">
-             <h1 className="text-3xl sm:text-6xl font-black text-black tracking-tight uppercase font-space">
+        <div className="mb-4 sm:mb-10 bg-white border-[3px] sm:border-[4px] border-black p-3 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rotate-[-2deg] flex-shrink-0">
+             <h1 className="text-2xl sm:text-6xl font-black text-black tracking-tight uppercase font-space">
                 Bubble Couple
              </h1>
-             <p className="text-black font-bold mt-1 sm:mt-2 text-center text-sm sm:text-lg border-t-2 border-black pt-1 sm:pt-2">
+             <p className="text-black font-bold mt-1 sm:mt-2 text-center text-xs sm:text-lg border-t-2 border-black pt-1 sm:pt-2">
                  Bombs, Bubbles & Betrayal
              </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-6 sm:mb-12 w-full max-w-md sm:max-w-none">
+        {/* Mobile: 2x2 grid, Desktop: row */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-6 mb-4 sm:mb-12 w-full max-w-sm sm:max-w-none flex-shrink-0">
           {/* Solo Button */}
           <button
             onClick={() => handleModeSelect(GameMode.SOLO)}
             onMouseEnter={() => audioManager.play(SoundType.CLICK)}
-            className="group w-full sm:w-44 flex flex-col items-center gap-2 sm:gap-4 bg-[#FFD93D] border-[3px] border-black p-4 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="group sm:w-44 flex flex-col items-center gap-1 sm:gap-4 bg-[#FFD93D] border-[3px] border-black p-3 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
-            <User size={36} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
+            <User size={28} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
             <div className="text-center">
-              <h3 className="text-xl sm:text-2xl font-black text-black uppercase">Solo</h3>
-              <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">单人闯关</p>
+              <h3 className="text-lg sm:text-2xl font-black text-black uppercase">Solo</h3>
+              <p className="text-[10px] sm:text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">单人闯关</p>
             </div>
           </button>
 
@@ -68,12 +69,12 @@ const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode, onOnl
           <button
             onClick={() => handleModeSelect(GameMode.PVE)}
             onMouseEnter={() => audioManager.play(SoundType.CLICK)}
-            className="group w-full sm:w-44 flex flex-col items-center gap-2 sm:gap-4 bg-[#4ECDC4] border-[3px] border-black p-4 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="group sm:w-44 flex flex-col items-center gap-1 sm:gap-4 bg-[#4ECDC4] border-[3px] border-black p-3 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
-            <HeartHandshake size={36} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
+            <HeartHandshake size={28} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
             <div className="text-center">
-              <h3 className="text-xl sm:text-2xl font-black text-black uppercase">PvE</h3>
-              <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">双人合作</p>
+              <h3 className="text-lg sm:text-2xl font-black text-black uppercase">PvE</h3>
+              <p className="text-[10px] sm:text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">双人合作</p>
             </div>
           </button>
 
@@ -81,12 +82,12 @@ const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode, onOnl
           <button
             onClick={() => handleModeSelect(GameMode.PVP)}
             onMouseEnter={() => audioManager.play(SoundType.CLICK)}
-            className="group w-full sm:w-44 flex flex-col items-center gap-2 sm:gap-4 bg-[#FF6B6B] border-[3px] border-black p-4 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="group sm:w-44 flex flex-col items-center gap-1 sm:gap-4 bg-[#FF6B6B] border-[3px] border-black p-3 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
-            <Swords size={36} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
+            <Swords size={28} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
             <div className="text-center">
-              <h3 className="text-xl sm:text-2xl font-black text-black uppercase">PvP</h3>
-              <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">双人对战</p>
+              <h3 className="text-lg sm:text-2xl font-black text-black uppercase">PvP</h3>
+              <p className="text-[10px] sm:text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">双人对战</p>
             </div>
           </button>
 
@@ -94,18 +95,18 @@ const Menu: React.FC<MenuProps> = ({ setMode, winner, onRestart, gameMode, onOnl
           <button
             onClick={handleOnlineClick}
             onMouseEnter={() => audioManager.play(SoundType.CLICK)}
-            className="group w-full sm:w-44 flex flex-col items-center gap-2 sm:gap-4 bg-[#A78BFA] border-[3px] border-black p-4 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="group sm:w-44 flex flex-col items-center gap-1 sm:gap-4 bg-[#A78BFA] border-[3px] border-black p-3 sm:p-6 hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
-            <Wifi size={36} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
+            <Wifi size={28} className="text-black stroke-[2.5px] sm:w-12 sm:h-12" />
             <div className="text-center">
-              <h3 className="text-xl sm:text-2xl font-black text-black uppercase">Online</h3>
-              <p className="text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">联机对战</p>
+              <h3 className="text-lg sm:text-2xl font-black text-black uppercase">Online</h3>
+              <p className="text-[10px] sm:text-xs font-bold text-black border-t-2 border-black mt-1 pt-1">联机对战</p>
             </div>
           </button>
         </div>
 
-        {/* Instructions */}
-        <div className="w-full max-w-lg bg-white border-[3px] border-black p-3 sm:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        {/* Instructions - hidden on very small screens */}
+        <div className="w-full max-w-lg bg-white border-[3px] border-black p-3 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex-shrink-0 hidden min-[480px]:block">
             <h4 className="text-center text-black font-black uppercase text-base sm:text-lg mb-3 sm:mb-4 bg-yellow-300 border-2 border-black inline-block px-2 transform -rotate-1 mx-auto block">How to Play</h4>
             <div className="grid grid-cols-2 gap-4 sm:gap-8 text-xs sm:text-sm">
                 <div className="space-y-1 sm:space-y-2">
