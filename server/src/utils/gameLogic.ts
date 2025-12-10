@@ -121,7 +121,9 @@ export function isEntityBlocked(
   ny: number,
   grid: ArraySchema<number>,
   bombs: ArraySchema<BombSchema>,
-  ghostMode: boolean = false
+  ghostMode: boolean = false,
+  currentX?: number,
+  currentY?: number
 ): boolean {
   const epsilon = 0.1;
   const corners = [
@@ -143,7 +145,15 @@ export function isEntityBlocked(
 
     if (!ghostMode) {
       const bomb = bombs.find(b => b.gridX === gx && b.gridY === gy);
-      if (bomb) return true;
+      if (bomb) {
+        // Allow moving out of a bomb you're standing on
+        if (currentX !== undefined && currentY !== undefined) {
+          if (isColliding(currentX, currentY, gx, gy)) {
+            continue; // Currently overlapping bomb, allow movement
+          }
+        }
+        return true;
+      }
     }
   }
 
@@ -198,7 +208,7 @@ export function movePlayer(
   let direction = player.direction;
 
   const checkMove = (nx: number, ny: number): boolean => {
-    return isEntityBlocked(nx, ny, grid, bombs, ghostMode);
+    return isEntityBlocked(nx, ny, grid, bombs, ghostMode, currentX, currentY);
   };
 
   // Move on X axis

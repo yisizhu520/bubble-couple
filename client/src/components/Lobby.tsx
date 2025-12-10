@@ -3,6 +3,19 @@ import { GameMode } from '../types';
 import { UseOnlineGameReturn, ConnectionStatus } from '../hooks/useOnlineGame';
 import { Wifi, WifiOff, Users, Swords, Heart, Copy, Check, ArrowLeft, Loader2 } from 'lucide-react';
 
+interface OnlineStats {
+  totalPlayers: number;
+  totalRooms: number;
+  rooms: Array<{
+    roomId: string;
+    name: string;
+    mode: string;
+    players: number;
+    maxPlayers: number;
+    isPrivate: boolean;
+  }>;
+}
+
 interface LobbyProps {
   onBack: () => void;
   onGameStart: (mode: GameMode) => void;
@@ -17,6 +30,7 @@ const Lobby: React.FC<LobbyProps> = ({ onBack, onGameStart, onlineGame }) => {
   const [joinCode, setJoinCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [serverReachable, setServerReachable] = useState<boolean | null>(null);
+  const [onlineStats, setOnlineStats] = useState<OnlineStats | null>(null);
   
   const {
     status,
@@ -31,13 +45,14 @@ const Lobby: React.FC<LobbyProps> = ({ onBack, onGameStart, onlineGame }) => {
     sendReady,
   } = onlineGame;
   
+  // Server URL
+  const serverUrl = import.meta.env.VITE_WS_URL 
+    ? import.meta.env.VITE_WS_URL.replace(/^ws/, 'http')
+    : 'http://localhost:2567';
+
   // Test server connection on mount
   React.useEffect(() => {
     const testConnection = async () => {
-      const serverUrl = import.meta.env.VITE_WS_URL 
-        ? import.meta.env.VITE_WS_URL.replace(/^ws/, 'http')
-        : 'http://localhost:2567';
-      
       try {
         const response = await fetch(`${serverUrl}/health`);
         if (response.ok) {
@@ -54,7 +69,30 @@ const Lobby: React.FC<LobbyProps> = ({ onBack, onGameStart, onlineGame }) => {
     };
     
     testConnection();
-  }, []);
+  }, [serverUrl]);
+
+  // Fetch online stats periodically
+  React.useEffect(() => {
+    const fetchOnlineStats = async () => {
+      try {
+        const response = await fetch(`${serverUrl}/online-stats`);
+        if (response.ok) {
+          const data = await response.json();
+          setOnlineStats(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch online stats:', err);
+      }
+    };
+    
+    // Fetch immediately
+    fetchOnlineStats();
+    
+    // Then poll every 5 seconds
+    const interval = setInterval(fetchOnlineStats, 5000);
+    
+    return () => clearInterval(interval);
+  }, [serverUrl]);
   
   // Copy room code to clipboard
   const copyRoomCode = useCallback(async () => {
@@ -166,6 +204,22 @@ const Lobby: React.FC<LobbyProps> = ({ onBack, onGameStart, onlineGame }) => {
     <div className="flex flex-col gap-4 relative z-10">
       <h2 className="text-2xl font-bold text-center mb-4">联机对战</h2>
       
+      {/* Online Stats */}
+      {onlineStats && (
+        <div className="flex items-center justify-center gap-4 p-3 bg-white border-4 border-black mb-2">
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-green-500" />
+            <span className="font-bold">{onlineStats.totalPlayers}</span>
+            <span className="text-gray-600">在线玩家</span>
+          </div>
+          <div className="w-px h-6 bg-gray-300" />
+          <div className="flex items-center gap-2">
+            <span className="font-bold">{onlineStats.totalRooms}</span>
+            <span className="text-gray-600">个房间</span>
+          </div>
+        </div>
+      )}
+      
       {/* Quick Match */}
       <div className="space-y-2">
         <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -212,7 +266,7 @@ const Lobby: React.FC<LobbyProps> = ({ onBack, onGameStart, onlineGame }) => {
         </button>
       </div>
     </div>
-  ), [handleQuickMatch]);
+  ), [handleQuickMatch, onlineStats]);
   
   // Create room screen - use useMemo
   const createScreen = useMemo(() => (

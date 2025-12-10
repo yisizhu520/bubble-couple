@@ -1,4 +1,4 @@
-import { Server } from "colyseus";
+import { Server, matchMaker } from "colyseus";
 import { createServer } from "http";
 import express from "express";
 import { monitor } from "@colyseus/monitor";
@@ -25,6 +25,41 @@ app.use((req, res, next) => {
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Online stats endpoint - returns online player count and room info
+app.get("/online-stats", async (req, res) => {
+  try {
+    // Get all rooms from all room types
+    const pvpRooms = await matchMaker.query({ name: "bubble_pvp" });
+    const pveRooms = await matchMaker.query({ name: "bubble_pve" });
+    
+    const allRooms = [...pvpRooms, ...pveRooms];
+    
+    // Calculate total online players
+    let totalPlayers = 0;
+    const rooms = allRooms.map(room => {
+      totalPlayers += room.clients;
+      return {
+        roomId: room.roomId,
+        name: room.name,
+        mode: room.name === "bubble_pvp" ? "PVP" : "PVE",
+        players: room.clients,
+        maxPlayers: room.maxClients,
+        isPrivate: room.metadata?.isPrivate || false,
+      };
+    });
+    
+    res.json({
+      totalPlayers,
+      totalRooms: allRooms.length,
+      rooms,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("Error getting online stats:", err);
+    res.status(500).json({ error: "Failed to get online stats" });
+  }
 });
 
 // Create HTTP server
