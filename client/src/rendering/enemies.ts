@@ -3,10 +3,31 @@
  * 
  * Draws all enemy types using the asset system.
  * Falls back to procedural Canvas rendering if no asset is loaded.
+ * 
+ * Supports both local game Enemy type and online OnlineEnemy type
+ * through the EnemyLike interface.
  */
 
-import { Enemy, EnemyType } from '../types';
+import { EnemyType } from '../types';
 import { PLAYER_SIZE } from '../constants';
+
+// Generic interface for enemy rendering (works with both local and online types)
+export interface EnemyLike {
+  x: number;
+  y: number;
+  type?: EnemyType;       // Local mode uses 'type'
+  enemyType?: string;     // Online mode uses 'enemyType'
+  invincibleTimer: number;
+  hp: number;
+  maxHp: number;
+}
+
+// Helper to get enemy type from either format
+function getEnemyType(enemy: EnemyLike): EnemyType {
+  if (enemy.type) return enemy.type;
+  if (enemy.enemyType) return enemy.enemyType as EnemyType;
+  return EnemyType.BALLOON;
+}
 import { assetManager, getEnemyAssetKey } from '../assets';
 import {
   COLORS,
@@ -163,11 +184,13 @@ const ENEMY_RENDERERS: Record<EnemyType, EnemyRenderer> = {
 
 /**
  * Draw a single enemy using the asset system
+ * Accepts both local Enemy type and online OnlineEnemy type via EnemyLike interface
  */
-export function drawEnemy(ctx: CanvasRenderingContext2D, enemy: Enemy, now: number): void {
+export function drawEnemy(ctx: CanvasRenderingContext2D, enemy: EnemyLike, now: number): void {
   const cx = enemy.x + PLAYER_SIZE / 2;
   const cy = enemy.y + PLAYER_SIZE / 2;
   const bob = Math.sin(now / BOB_SPEED) * BOB_AMPLITUDE;
+  const enemyType = getEnemyType(enemy);
   
   // Invincibility flash effect
   if (enemy.invincibleTimer > 0 && shouldFlash(now, INVINCIBLE_BLINK_SPEED)) {
@@ -175,7 +198,7 @@ export function drawEnemy(ctx: CanvasRenderingContext2D, enemy: Enemy, now: numb
   }
   
   // Try to draw using asset system first
-  const assetKey = getEnemyAssetKey(enemy.type);
+  const assetKey = getEnemyAssetKey(enemyType);
   const asset = assetManager.get(assetKey);
   
   if (asset) {
@@ -187,7 +210,7 @@ export function drawEnemy(ctx: CanvasRenderingContext2D, enemy: Enemy, now: numb
     ctx.lineWidth = 2;
     ctx.strokeStyle = COLORS.OUTLINE;
     
-    const renderer = ENEMY_RENDERERS[enemy.type];
+    const renderer = ENEMY_RENDERERS[enemyType];
     if (renderer) {
       renderer(ctx, cx, cy, bob);
     }
@@ -213,7 +236,8 @@ export function drawEnemy(ctx: CanvasRenderingContext2D, enemy: Enemy, now: numb
 
 /**
  * Draw all enemies
+ * Accepts both local Enemy[] and online OnlineEnemy[] via EnemyLike interface
  */
-export function drawEnemies(ctx: CanvasRenderingContext2D, enemies: Enemy[], now: number): void {
+export function drawEnemies(ctx: CanvasRenderingContext2D, enemies: EnemyLike[], now: number): void {
   enemies.forEach(e => drawEnemy(ctx, e, now));
 }

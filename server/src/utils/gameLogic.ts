@@ -59,6 +59,8 @@ export function checkEntityCollision(
 }
 
 // Create initial grid
+// NOTE: ArraySchema does NOT support index assignment (grid[i] = value).
+// Must use push() to add elements sequentially.
 export function createInitialGrid(wallDensity: number = 0.6): {
   grid: ArraySchema<number>;
   items: ItemSchema[];
@@ -68,31 +70,23 @@ export function createInitialGrid(wallDensity: number = 0.6): {
 
   for (let y = 0; y < GRID_H; y++) {
     for (let x = 0; x < GRID_W; x++) {
-      const index = y * GRID_W + x;
+      let tileType: number;
       
       // Border walls
       if (x === 0 || x === GRID_W - 1 || y === 0 || y === GRID_H - 1) {
-        grid[index] = TileType.WALL_HARD;
-        continue;
+        tileType = TileType.WALL_HARD;
       }
-
       // Fixed pattern walls (every other)
-      if (x % 2 === 0 && y % 2 === 0) {
-        grid[index] = TileType.WALL_HARD;
-        continue;
+      else if (x % 2 === 0 && y % 2 === 0) {
+        tileType = TileType.WALL_HARD;
       }
-
       // Player spawn zones (keep clear)
-      const isP1Zone = (x <= 2 && y <= 2);
-      const isP2Zone = (x >= GRID_W - 3 && y >= GRID_H - 3);
-      if (isP1Zone || isP2Zone) {
-        grid[index] = TileType.EMPTY;
-        continue;
+      else if ((x <= 2 && y <= 2) || (x >= GRID_W - 3 && y >= GRID_H - 3)) {
+        tileType = TileType.EMPTY;
       }
-
       // Random soft walls
-      if (Math.random() < wallDensity) {
-        grid[index] = TileType.WALL_SOFT;
+      else if (Math.random() < wallDensity) {
+        tileType = TileType.WALL_SOFT;
         
         // Random item under wall
         if (Math.random() < 0.4) {
@@ -107,9 +101,14 @@ export function createInitialGrid(wallDensity: number = 0.6): {
           const randomType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
           items.push(new ItemSchema(generateId(), x, y, randomType));
         }
-      } else {
-        grid[index] = TileType.EMPTY;
       }
+      // Empty tile
+      else {
+        tileType = TileType.EMPTY;
+      }
+      
+      // ArraySchema requires push(), index assignment doesn't work!
+      grid.push(tileType);
     }
   }
 

@@ -2,9 +2,25 @@
  * Effects Renderer
  * 
  * Draws bombs and explosions with animations.
+ * 
+ * Supports both local game types and online types
+ * through BombLike and ExplosionLike interfaces.
  */
 
-import { Bomb, Explosion } from '../types';
+// Generic interface for bomb rendering (works with both local and online types)
+export interface BombLike {
+  x: number;
+  y: number;
+  gridX: number;
+  gridY: number;
+  timer: number;
+}
+
+// Generic interface for explosion rendering
+export interface ExplosionLike {
+  gridX: number;
+  gridY: number;
+}
 import { TILE_SIZE } from '../constants';
 import {
   COLORS,
@@ -20,8 +36,9 @@ import {
 
 /**
  * Draw a single bomb with pulsing animation
+ * Accepts both local Bomb type and online OnlineBomb type via BombLike interface
  */
-export function drawBomb(ctx: CanvasRenderingContext2D, bomb: Bomb, now: number): void {
+export function drawBomb(ctx: CanvasRenderingContext2D, bomb: BombLike, now: number): void {
   const scale = 1 + Math.sin(now / BOMB_PULSE_SPEED) * BOMB_PULSE_AMPLITUDE;
   const centerX = bomb.x + TILE_SIZE / 2;
   const centerY = bomb.y + TILE_SIZE / 2;
@@ -70,15 +87,17 @@ export function drawBomb(ctx: CanvasRenderingContext2D, bomb: Bomb, now: number)
 
 /**
  * Draw all bombs
+ * Accepts both local Bomb[] and online OnlineBomb[] via BombLike interface
  */
-export function drawBombs(ctx: CanvasRenderingContext2D, bombs: Bomb[], now: number): void {
+export function drawBombs(ctx: CanvasRenderingContext2D, bombs: BombLike[], now: number): void {
   bombs.forEach(bomb => drawBomb(ctx, bomb, now));
 }
 
 /**
  * Draw a single explosion
+ * Accepts both local Explosion type and online OnlineExplosion type via ExplosionLike interface
  */
-export function drawExplosion(ctx: CanvasRenderingContext2D, explosion: Explosion): void {
+export function drawExplosion(ctx: CanvasRenderingContext2D, explosion: ExplosionLike): void {
   const px = explosion.gridX * TILE_SIZE;
   const py = explosion.gridY * TILE_SIZE;
   
@@ -103,7 +122,8 @@ export function drawExplosion(ctx: CanvasRenderingContext2D, explosion: Explosio
 
 /**
  * Draw all explosions
+ * Accepts both local Explosion[] and online OnlineExplosion[] via ExplosionLike interface
  */
-export function drawExplosions(ctx: CanvasRenderingContext2D, explosions: Explosion[]): void {
+export function drawExplosions(ctx: CanvasRenderingContext2D, explosions: ExplosionLike[]): void {
   explosions.forEach(e => drawExplosion(ctx, e));
 }

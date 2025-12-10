@@ -12,6 +12,17 @@ import {
   checkEntityCollision, createInitialGrid, isEntityBlocked,
   spawnEnemy, movePlayer, triggerExplosion, applyItemEffect
 } from "../utils/gameLogic";
+import {
+  AI_CONFIG,
+  findNearestTarget,
+  randomDirection,
+  randomDirInterval,
+  isInDanger,
+  getDodgeDirection,
+  getChaseDirection,
+  getSimpleChaseDirection,
+  type BombLike,
+} from "../shared";
 
 interface PlayerInput {
   up: boolean;
@@ -255,10 +266,11 @@ export class BubbleRoom extends Room<GameRoomState> {
     // Create grid and items
     const { grid, items } = createInitialGrid(levelConfig.wallDensity);
     
-    // Copy grid to state
-    for (let i = 0; i < grid.length; i++) {
-      this.state.grid[i] = grid[i];
-    }
+    // Copy grid to state (clear + push to ensure patches are sent)
+    this.state.grid.clear();
+    grid.forEach((tile) => {
+      this.state.grid.push(tile ?? 0);
+    });
     
     // Add items
     this.state.items.clear();
@@ -509,66 +521,90 @@ export class BubbleRoom extends Room<GameRoomState> {
       }
     }
     
+    // Create collision checker for enemies (closure captures state)
+    const createCollisionChecker = (enemy: EnemySchema) => {
+      return (nx: number, ny: number) => 
+        isEntityBlocked(nx, ny, this.state.grid, this.state.bombs, false);
+    };
+    
+    // Convert bombs to BombLike interface
+    const bombs: BombLike[] = [];
+    this.state.bombs.forEach(b => {
+      bombs.push({
+        gridX: b.gridX,
+        gridY: b.gridY,
+        range: b.range,
+        timer: b.timer,
+      });
+    });
+    
     this.state.enemies.forEach(enemy => {
       if (enemy.invincibleTimer > 0) enemy.invincibleTimer -= dt;
       
       enemy.changeDirTimer -= dt;
       enemy.actionTimer -= dt;
       
-      // Find nearest player
-      let targetPlayer: PlayerSchema | null = null;
-      let minDist = Infinity;
-      
+      // Find nearest player using shared module
       const players = Array.from(this.state.players.values());
-      for (const player of players) {
-        if (player.state !== PlayerState.DEAD) {
-          const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
-          if (dist < minDist) {
-            minDist = dist;
-            targetPlayer = player;
-          }
-        }
-      }
+      const targetPlayer = findNearestTarget(
+        enemy,
+        players,
+        (p) => p.state !== PlayerState.DEAD
+      );
       
       // Boss abilities
       if (enemy.actionTimer <= 0) {
-        if (enemy.enemyType === "BOSS_SLIME" && this.state.enemies.length < 8) {
+        if (enemy.enemyType === "BOSS_SLIME" && this.state.enemies.length < AI_CONFIG.MAX_MINIONS) {
           const minion = spawnEnemy(this.state.grid, this.state.enemies, "MINION", "minion");
           if (minion) {
             minion.x = enemy.x;
             minion.y = enemy.y;
             this.state.enemies.push(minion);
           }
-          enemy.actionTimer = 4000;
-        } else if (enemy.enemyType === "BOSS_MECHA") {
+          enemy.actionTimer = AI_CONFIG.BOSS_SLIME_SPAWN_COOLDOWN;
+        } else if (enemy.enemyType === "BOSS_MECHA" && !isInDanger(enemy, bombs)) {
           const gx = Math.floor((enemy.x + PLAYER_SIZE / 2) / TILE_SIZE);
           const gy = Math.floor((enemy.y + PLAYER_SIZE / 2) / TILE_SIZE);
           const exists = this.state.bombs.some(b => b.gridX === gx && b.gridY === gy);
           if (!exists) {
-            const bomb = new BombSchema(`megabomb-${Date.now()}`, 0, gx, gy, 5);
-            bomb.timer = 4000;
+            const bomb = new BombSchema(
+              `megabomb-${Date.now()}`,
+              0,
+              gx,
+              gy,
+              AI_CONFIG.BOSS_MECHA_BOMB_RANGE
+            );
+            bomb.timer = AI_CONFIG.BOSS_MECHA_BOMB_TIMER;
             this.state.bombs.push(bomb);
           }
-          enemy.actionTimer = 5000;
+          enemy.actionTimer = AI_CONFIG.BOSS_MECHA_BOMB_COOLDOWN;
         }
       }
       
-      // Movement AI
-      const shouldChase = ["GHOST", "TANK", "MINION", "BOSS_SLIME", "BOSS_MECHA"].includes(enemy.enemyType);
+      // Movement AI using shared module
+      const isChaser = ["GHOST", "TANK", "MINION", "BOSS_SLIME", "BOSS_MECHA"].includes(enemy.enemyType);
+      const collisionChecker = createCollisionChecker(enemy);
       
-      if (shouldChase && targetPlayer && enemy.changeDirTimer <= 0) {
-        const diffX = targetPlayer.x - enemy.x;
-        const diffY = targetPlayer.y - enemy.y;
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-          enemy.direction = diffX > 0 ? "RIGHT" : "LEFT";
-        } else {
-          enemy.direction = diffY > 0 ? "DOWN" : "UP";
+      // BOSS_MECHA priority: dodge bombs first
+      if (enemy.enemyType === "BOSS_MECHA" && enemy.changeDirTimer <= 0) {
+        const dodgeDir = getDodgeDirection(enemy, bombs, collisionChecker);
+        if (dodgeDir) {
+          enemy.direction = dodgeDir;
+          enemy.changeDirTimer = 50; // Quick re-evaluate when dodging
+        } else if (targetPlayer) {
+          enemy.direction = getChaseDirection(enemy, targetPlayer, collisionChecker);
+          enemy.changeDirTimer = AI_CONFIG.CHASE_RECALC_INTERVAL;
         }
-        enemy.changeDirTimer = 500;
-      } else if (enemy.changeDirTimer <= 0) {
-        const dirs = ["UP", "DOWN", "LEFT", "RIGHT"];
-        enemy.direction = dirs[Math.floor(Math.random() * dirs.length)];
-        enemy.changeDirTimer = 2000 + Math.random() * 2000;
+      }
+      // Other chasers: use smart chase with obstacle avoidance
+      else if (isChaser && targetPlayer && enemy.changeDirTimer <= 0) {
+        enemy.direction = getChaseDirection(enemy, targetPlayer, collisionChecker);
+        enemy.changeDirTimer = AI_CONFIG.CHASE_RECALC_INTERVAL;
+      }
+      // Random movement for non-chasers (BALLOON, FROG)
+      else if (enemy.changeDirTimer <= 0) {
+        enemy.direction = randomDirection();
+        enemy.changeDirTimer = randomDirInterval();
       }
       
       // Move enemy with time factor
@@ -589,6 +625,7 @@ export class BubbleRoom extends Room<GameRoomState> {
         enemy.x = nextX;
         enemy.y = nextY;
       } else {
+        // Hit wall - trigger direction change immediately
         enemy.changeDirTimer = 0;
       }
     });

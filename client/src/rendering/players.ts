@@ -8,9 +8,41 @@
  * - Invincibility flashing
  * - Shield effect
  * - Direction-based eye movement (for Canvas fallback)
+ * 
+ * Supports both local game Player type and online OnlinePlayer type
+ * through the PlayerLike interface.
  */
 
-import { Player, PlayerState, Direction } from '../types';
+import { PlayerState, Direction } from '../types';
+
+// Generic interface for player rendering (works with both local and online types)
+export interface PlayerLike {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  state: PlayerState | string;  // Local uses enum, online uses string
+  direction: Direction | string;
+  ghostTimer: number;
+  invincibleTimer: number;
+  hasShield: boolean;
+}
+
+// Helper to normalize state (handles both enum and string)
+function isPlayerDead(player: PlayerLike): boolean {
+  return player.state === PlayerState.DEAD || player.state === 'DEAD';
+}
+
+function isPlayerTrapped(player: PlayerLike): boolean {
+  return player.state === PlayerState.TRAPPED || player.state === 'TRAPPED';
+}
+
+function getDirection(player: PlayerLike): Direction {
+  if (typeof player.direction === 'string') {
+    return player.direction as Direction;
+  }
+  return player.direction;
+}
 import { PLAYER_SIZE } from '../constants';
 import { assetManager, getPlayerAssetKey } from '../assets';
 import {
@@ -27,13 +59,15 @@ import { shouldFlash } from './primitives';
 
 /**
  * Draw a single player using the asset system
+ * Accepts both local Player type and online OnlinePlayer type via PlayerLike interface
  */
-export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player, now: number): void {
+export function drawPlayer(ctx: CanvasRenderingContext2D, player: PlayerLike, now: number): void {
   // Skip dead players
-  if (player.state === PlayerState.DEAD) return;
+  if (isPlayerDead(player)) return;
   
   const cx = player.x + PLAYER_SIZE / 2;
   const cy = player.y + PLAYER_SIZE / 2;
+  const direction = getDirection(player);
   
   ctx.save();
   
@@ -56,8 +90,8 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player, now: n
     asset.draw(ctx, cx, cy);
     
     // Draw dynamic pupils on top of SVG (for direction-based eye movement)
-    if (player.state !== PlayerState.TRAPPED) {
-      drawPlayerPupils(ctx, cx, cy, player.direction);
+    if (!isPlayerTrapped(player)) {
+      drawPlayerPupils(ctx, cx, cy, direction);
     }
   } else {
     // Fallback to legacy Canvas rendering
@@ -79,13 +113,13 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player, now: n
     ctx.stroke();
     
     // Normal state: draw eyes
-    if (player.state !== PlayerState.TRAPPED) {
-      drawPlayerEyes(ctx, cx, cy, player.direction);
+    if (!isPlayerTrapped(player)) {
+      drawPlayerEyes(ctx, cx, cy, direction);
     }
   }
   
   // Trapped state overlay (works with both asset and Canvas)
-  if (player.state === PlayerState.TRAPPED) {
+  if (isPlayerTrapped(player)) {
     ctx.fillStyle = COLORS.TRAPPED_BUBBLE;
     ctx.beginPath();
     ctx.arc(cx, cy, PLAYER_SIZE / 2 + 4, 0, Math.PI * 2);
@@ -176,7 +210,8 @@ function drawShield(ctx: CanvasRenderingContext2D, cx: number, cy: number): void
 
 /**
  * Draw all players
+ * Accepts both local Player[] and online OnlinePlayer[] via PlayerLike interface
  */
-export function drawPlayers(ctx: CanvasRenderingContext2D, players: Player[], now: number): void {
+export function drawPlayers(ctx: CanvasRenderingContext2D, players: PlayerLike[], now: number): void {
   players.forEach(p => drawPlayer(ctx, p, now));
 }

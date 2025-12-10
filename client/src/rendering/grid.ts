@@ -2,11 +2,42 @@
  * Grid Renderer
  * 
  * Draws the game floor, walls, and item pickups.
+ * 
+ * Supports both local game GameState and online grid formats
+ * through GridLike and ItemLike interfaces.
  */
 
-import { GameState, TileType, ItemType } from '../types';
+import { TileType, ItemType } from '../types';
 import { TILE_SIZE, GRID_W, GRID_H } from '../constants';
 import { COLORS, WALL_INSET, ITEM_RADIUS, ITEM_COLORS, ITEM_ICONS } from './constants';
+
+// Generic interface for grid access (works with both local and online types)
+// Local mode: grid is number[][] (2D array)
+// Online mode: grid is number[] (flat array, row-major)
+export interface GridLike {
+  getTile(x: number, y: number): TileType | number;
+}
+
+// Generic interface for item rendering
+export interface ItemLike {
+  gridX: number;
+  gridY: number;
+  itemType: ItemType | number;
+}
+
+// Helper to create GridLike from 2D array (local mode)
+export function createGridAccessor2D(grid: number[][]): GridLike {
+  return {
+    getTile: (x: number, y: number) => grid[y]?.[x] ?? TileType.EMPTY
+  };
+}
+
+// Helper to create GridLike from flat array (online mode)
+export function createGridAccessorFlat(grid: number[]): GridLike {
+  return {
+    getTile: (x: number, y: number) => grid[y * GRID_W + x] ?? TileType.EMPTY
+  };
+}
 
 /**
  * Draw floor background with checkerboard pattern and grid lines
@@ -108,9 +139,10 @@ export function drawItem(ctx: CanvasRenderingContext2D, px: number, py: number, 
 }
 
 /**
- * Draw all grid content: walls and items
+ * Draw all grid content: walls and items (local game mode)
+ * Uses GameState with 2D grid array and items dictionary
  */
-export function drawGridContent(ctx: CanvasRenderingContext2D, state: GameState): void {
+export function drawGridContent(ctx: CanvasRenderingContext2D, state: { grid: number[][]; items: { [key: string]: ItemType } }): void {
   for (let y = 0; y < GRID_H; y++) {
     for (let x = 0; x < GRID_W; x++) {
       const tile = state.grid[y][x];
@@ -130,6 +162,40 @@ export function drawGridContent(ctx: CanvasRenderingContext2D, state: GameState)
       } else if (tile === TileType.WALL_SOFT) {
         drawSoftWall(ctx, px, py);
       }
+    }
+  }
+}
+
+/**
+ * Draw grid walls only using GridLike interface (online mode compatible)
+ */
+export function drawGridWalls(ctx: CanvasRenderingContext2D, grid: GridLike): void {
+  for (let y = 0; y < GRID_H; y++) {
+    for (let x = 0; x < GRID_W; x++) {
+      const tile = grid.getTile(x, y);
+      const px = x * TILE_SIZE;
+      const py = y * TILE_SIZE;
+      
+      if (tile === TileType.WALL_HARD) {
+        drawHardWall(ctx, px, py);
+      } else if (tile === TileType.WALL_SOFT) {
+        drawSoftWall(ctx, px, py);
+      }
+    }
+  }
+}
+
+/**
+ * Draw items using ItemLike array (online mode compatible)
+ */
+export function drawItems(ctx: CanvasRenderingContext2D, items: ItemLike[], grid: GridLike): void {
+  for (const item of items) {
+    const tile = grid.getTile(item.gridX, item.gridY);
+    // Items are only visible on empty tiles
+    if (tile === TileType.EMPTY) {
+      const px = item.gridX * TILE_SIZE;
+      const py = item.gridY * TILE_SIZE;
+      drawItem(ctx, px, py, item.itemType as ItemType);
     }
   }
 }

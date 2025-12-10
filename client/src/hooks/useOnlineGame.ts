@@ -1,20 +1,14 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Client, Room } from 'colyseus.js';
 import { GameMode } from '../types';
-import { GRID_W, GRID_H, TILE_SIZE, PLAYER_SIZE, CORNER_TOLERANCE } from '../constants';
+import { TILE_SIZE } from '../constants';
+import { createGridAccessorFlat, predictMove, type BombAccessor } from '../shared';
 
 // Server URL - uses environment variable or defaults to localhost
 // Colyseus client needs HTTP URL, it will automatically use WebSocket
 const SERVER_URL = import.meta.env.VITE_WS_URL 
   ? import.meta.env.VITE_WS_URL.replace(/^ws/, 'http')
   : 'http://localhost:2567';
-
-// Tile types for collision detection
-const TileType = {
-  EMPTY: 0,
-  WALL_HARD: 1,
-  WALL_SOFT: 2,
-} as const;
 
 // Room state types (mirrors server schema)
 export interface OnlinePlayer {
@@ -158,92 +152,12 @@ export function useOnlineGame(): UseOnlineGameReturn {
     mode: string;
   } | null>(null);
   
-  // Client-side collision check for prediction
-  const isBlocked = useCallback((nx: number, ny: number, grid: number[], bombs: OnlineBomb[], ghostMode: boolean): boolean => {
-    const epsilon = 0.1;
-    const corners = [
-      { x: nx, y: ny },
-      { x: nx + PLAYER_SIZE - epsilon, y: ny },
-      { x: nx, y: ny + PLAYER_SIZE - epsilon },
-      { x: nx + PLAYER_SIZE - epsilon, y: ny + PLAYER_SIZE - epsilon },
-    ];
-
-    for (const c of corners) {
-      const gx = Math.floor(c.x / TILE_SIZE);
-      const gy = Math.floor(c.y / TILE_SIZE);
-
-      if (gx < 0 || gx >= GRID_W || gy < 0 || gy >= GRID_H) return true;
-
-      const tile = grid[gy * GRID_W + gx];
-      if (tile === TileType.WALL_HARD) return true;
-      if (tile === TileType.WALL_SOFT && !ghostMode) return true;
-
-      if (!ghostMode) {
-        const bomb = bombs.find(b => b.gridX === gx && b.gridY === gy);
-        if (bomb) return true;
-      }
-    }
-    return false;
+  // Convert OnlineBombs to BombAccessor for shared collision module
+  const getBombAccessors = useCallback((bombs: OnlineBomb[]): BombAccessor[] => {
+    return bombs.map(b => ({ gridX: b.gridX, gridY: b.gridY }));
   }, []);
   
-  // Prediction movement with corner sliding
-  const predictMove = useCallback((
-    currentX: number, 
-    currentY: number, 
-    dx: number, 
-    dy: number, 
-    speed: number,
-    grid: number[], 
-    bombs: OnlineBomb[],
-    ghostMode: boolean
-  ): { x: number; y: number } => {
-    let newX = currentX;
-    let newY = currentY;
-
-    // Move on X axis
-    if (dx !== 0) {
-      if (!isBlocked(currentX + dx, currentY, grid, bombs, ghostMode)) {
-        newX = currentX + dx;
-      } else {
-        // Corner sliding for X movement
-        const centerY = currentY + PLAYER_SIZE / 2;
-        const tileY = Math.floor(centerY / TILE_SIZE);
-        const tileCenterY = tileY * TILE_SIZE + TILE_SIZE / 2;
-        const diff = centerY - tileCenterY;
-        if (Math.abs(diff) <= CORNER_TOLERANCE && Math.abs(diff) > 0) {
-          const dir = diff > 0 ? -1 : 1;
-          const correction = dir * speed;
-          if (!isBlocked(currentX, currentY + correction, grid, bombs, ghostMode)) {
-            newY = currentY + correction;
-          }
-        }
-      }
-    }
-
-    // Move on Y axis
-    if (dy !== 0) {
-      if (!isBlocked(newX, currentY + dy, grid, bombs, ghostMode)) {
-        newY = currentY + dy;
-      } else {
-        // Corner sliding for Y movement
-        const centerX = newX + PLAYER_SIZE / 2;
-        const tileX = Math.floor(centerX / TILE_SIZE);
-        const tileCenterX = tileX * TILE_SIZE + TILE_SIZE / 2;
-        const diff = centerX - tileCenterX;
-        if (Math.abs(diff) <= CORNER_TOLERANCE && Math.abs(diff) > 0) {
-          const dir = diff > 0 ? -1 : 1;
-          const correction = dir * speed;
-          if (!isBlocked(newX + correction, currentY, grid, bombs, ghostMode)) {
-            newX = newX + correction;
-          }
-        }
-      }
-    }
-
-    return { x: newX, y: newY };
-  }, [isBlocked]);
-  
-  // Client prediction loop
+  // Client prediction loop using shared movement module
   useEffect(() => {
     if (!gameState || gameState.phase !== 'PLAYING' || !predictionRef.current) {
       return;
@@ -263,14 +177,17 @@ export function useOnlineGame(): UseOnlineGameReturn {
       if (input.right) dx = pred.speed;
       
       if (dx !== 0 || dy !== 0) {
+        // Use shared predictMove from shared/movement.ts
+        const grid = createGridAccessorFlat(gameState.grid);
+        const bombs = getBombAccessors(gameState.bombs);
         const newPos = predictMove(
           pred.x, 
           pred.y, 
           dx, 
           dy, 
           pred.speed,
-          gameState.grid, 
-          gameState.bombs,
+          grid,
+          bombs,
           pred.ghostTimer > 0
         );
         pred.x = newPos.x;
@@ -288,7 +205,7 @@ export function useOnlineGame(): UseOnlineGameReturn {
         cancelAnimationFrame(predictionLoopRef.current);
       }
     };
-  }, [gameState, predictMove]);
+  }, [gameState, getBombAccessors]);
   
   // Initialize client
   useEffect(() => {
