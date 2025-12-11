@@ -4,6 +4,7 @@ import { GameState, PlayerState, GameMode } from '../types';
 import { Bomb, Zap, Volume2, VolumeX, Flag, Star, ArrowRight, LogOut } from 'lucide-react';
 import { HEADER_HEIGHT } from '../constants';
 import { audioManager } from '../utils/audio';
+import { useTranslation } from 'react-i18next';
 
 interface HUDProps {
   hudState: GameState | null;
@@ -12,6 +13,7 @@ interface HUDProps {
 }
 
 const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
+  const { t } = useTranslation();
   const [isMuted, setIsMuted] = useState(audioManager.getMuteState());
 
   const toggleMute = () => {
@@ -50,11 +52,11 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
           
           {p.state === PlayerState.TRAPPED ? (
               <div className="text-red-600 font-black text-[10px] sm:text-sm animate-pulse bg-red-100 px-0.5 sm:px-1 border border-red-600 truncate">
-                  TRAPPED {(p.trappedTimer / 1000).toFixed(1)}s
+                  {t('hud.trapped').toUpperCase()} {(p.trappedTimer / 1000).toFixed(1)}s
               </div>
           ) : p.state === PlayerState.DEAD ? (
               <div className="text-gray-500 font-black text-[10px] sm:text-sm bg-gray-200 px-0.5 sm:px-1 border border-gray-500 truncate">
-                  DEAD
+                  {t('hud.dead').toUpperCase()}
               </div>
           ) : (
               <div className="flex gap-1 sm:gap-2 text-[10px] sm:text-xs font-bold text-black">
@@ -79,7 +81,7 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
     >
         {/* P1 Stats */}
         <div className="flex-1 min-w-0">
-            {p1 && renderPlayerStats(p1, p2 ? "P1 (YOU)" : "HERO")}
+            {p1 && renderPlayerStats(p1, p2 ? t('hud.p1') : t('hud.hero'))}
         </div>
         
         {/* Center: Timer & Controls */}
@@ -87,7 +89,7 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
              <button 
                 onClick={onExit}
                 className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-red-400 hover:bg-red-500 border-[2px] sm:border-[3px] border-black active:translate-y-1 active:shadow-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all"
-                title="退出游戏"
+                title={t('hud.exit')}
              >
                  <LogOut size={16} className="text-black sm:w-5 sm:h-5" />
              </button>
@@ -101,14 +103,14 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
              {/* Level Indicator */}
              <div className="flex items-center gap-1 bg-black text-white px-1 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold border border-black -rotate-1">
                  <Flag size={8} className="sm:w-2.5 sm:h-2.5" />
-                 <span className="hidden sm:inline">STAGE {hudState.level}</span>
+                 <span className="hidden sm:inline">{t('hud.stage').toUpperCase()} {hudState.level}</span>
                  <span className="inline sm:hidden">{hudState.level}</span>
              </div>
         </div>
 
         {/* P2 Stats (only show if P2 exists) */}
         <div className="flex-1 flex justify-end min-w-0">
-            {p2 ? renderPlayerStats(p2, "P2 (ALLY)", true) : <div></div>}
+            {p2 ? renderPlayerStats(p2, t('hud.p2'), true) : <div></div>}
         </div>
 
         {/* Level Transition Overlay */}
@@ -117,15 +119,15 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
                  <div className="bg-white p-4 sm:p-8 border-[3px] sm:border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center max-w-md w-full relative">
                      
                      <h2 className="text-2xl sm:text-4xl font-black text-black bg-yellow-300 border-[3px] border-black inline-block px-3 sm:px-4 py-1 sm:py-2 transform -rotate-2 mb-4 sm:mb-6 uppercase">
-                         Stage Clear!
+                         {t('hud.stageClear')}
                      </h2>
                      
                      {/* Stats Table */}
                      <div className="bg-gray-50 border-[3px] border-black p-3 sm:p-4 mb-4 sm:mb-8">
                         <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-2 text-[10px] sm:text-xs font-black text-black uppercase pb-2 border-b-2 border-black">
-                            <span className="text-left">Player</span>
-                            <span className="text-center">击杀</span>
-                            <span className="text-right">状态</span>
+                            <span className="text-left">{t('hud.player')}</span>
+                            <span className="text-center">{t('hud.kills')}</span>
+                            <span className="text-right">{t('hud.status')}</span>
                         </div>
                         
                         {/* P1 */}
@@ -135,7 +137,7 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
                                     <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 border border-black"></div> {p2 ? 'P1' : 'HERO'}
                                 </div>
                                 <div className="text-center font-mono text-lg sm:text-xl font-bold">{p1.score}</div>
-                                <div className="text-right text-[10px] sm:text-xs font-black text-green-600 bg-green-100 border border-green-600 px-0.5 sm:px-1 inline-block">存活</div>
+                                <div className="text-right text-[10px] sm:text-xs font-black text-green-600 bg-green-100 border border-green-600 px-0.5 sm:px-1 inline-block">{t('hud.alive')}</div>
                             </div>
                         )}
                         
@@ -146,7 +148,7 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
                                     <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 border border-black"></div> P2
                                 </div>
                                 <div className="text-center font-mono text-lg sm:text-xl font-bold">{p2.score}</div>
-                                <div className="text-right text-[10px] sm:text-xs font-black text-green-600 bg-green-100 border border-green-600 px-0.5 sm:px-1 inline-block">存活</div>
+                                <div className="text-right text-[10px] sm:text-xs font-black text-green-600 bg-green-100 border border-green-600 px-0.5 sm:px-1 inline-block">{t('hud.alive')}</div>
                             </div>
                         )}
                      </div>
@@ -155,7 +157,7 @@ const HUD: React.FC<HUDProps> = ({ hudState, onNextLevel, onExit }) => {
                         onClick={onNextLevel}
                         className="w-full flex items-center justify-center gap-2 px-4 sm:px-8 py-3 sm:py-4 bg-[#7FBC8C] hover:bg-[#68a375] border-[3px] border-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-black font-black text-lg sm:text-xl transition-all"
                      >
-                         <span>NEXT MISSION</span>
+                         <span>{t('hud.nextMission')}</span>
                          <ArrowRight className="stroke-[3px] w-5 h-5 sm:w-6 sm:h-6" />
                      </button>
                  </div>

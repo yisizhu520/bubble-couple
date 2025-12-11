@@ -1,0 +1,66 @@
+{
+  "app": {
+    "title": "泡泡情侣",
+    "loading": "加载资源中...",
+    "loadingMode": "{{mode}} 模式"
+  },
+  "menu": {
+    "subtitle": "炸弹、泡泡与背叛",
+    "solo": "单人",
+    "soloDesc": "单人闯关",
+    "pve": "合作",
+    "pveDesc": "双人合作",
+    "pvp": "对战",
+    "pvpDesc": "双人对战",
+    "online": "联机",
+    "onlineDesc": "联机对战",
+    "howToPlay": "操作说明",
+    "player1": "玩家1 / 单人",
+    "player2": "玩家2",
+    "move": "移动",
+    "bomb": "放炸弹",
+    "touchSupport": "支持触屏 / 手柄",
+    "gamepadSupport": "支持手柄"
+  },
+  "game": {
+    "level": "关卡",
+    "lives": "生命",
+    "exit": "退出",
+    "nextLevel": "下一关",
+    "gameOver": "游戏结束",
+    "victory": "胜利！",
+    "playerWins": "玩家{{player}}获胜！",
+    "heroDied": "英雄陨落...",
+    "bothDied": "双双阵亡...",
+    "congratulations": "恭喜通关！",
+    "missionComplete": "任务完成！",
+    "kneel": "向冠军致敬！",
+    "playAgain": "再来一局",
+    "backToMenu": "返回菜单"
+  },
+  "hud": {
+    "exit": "退出游戏",
+    "p1": "玩家1",
+    "p2": "玩家2",
+    "hero": "英雄",
+    "stage": "关卡",
+    "trapped": "被困",
+    "dead": "阵亡",
+    "stageClear": "关卡通过！",
+    "player": "玩家",
+    "kills": "击杀",
+    "status": "状态",
+    "alive": "存活",
+    "nextMission": "下一关"
+  },
+  "lobby": {
+    "connected": "已连接",
+    "connecting": "连接中...",
+    "serverUnreachable": "服务器不可达",
+    "disconnected": "未连接"
+  },
+  "language": {
+    "switch": "English",
+    "current": "中文"
+  }
+}

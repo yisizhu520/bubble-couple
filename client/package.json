@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "colyseus.js": "^0.15.28",
+    "i18next": "^25.7.2",
     "lucide-react": "^0.556.0",
     "react": "^19.2.1",
-    "react-dom": "^19.2.1"
+    "react-dom": "^19.2.1",
+    "react-i18next": "^16.4.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

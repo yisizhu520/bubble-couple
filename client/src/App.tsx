@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { GameMode } from './types';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useOnlineGame } from './hooks/useOnlineGame';
@@ -15,6 +16,7 @@ import { initAssets, isAssetsReady, getAssetType } from './assets';
 type AppScreen = 'menu' | 'local-game' | 'online-lobby' | 'online-game';
 
 const App: React.FC = () => {
+  const { t } = useTranslation();
   const [screen, setScreen] = useState<AppScreen>('menu');
   const [mode, setMode] = useState<GameMode>(GameMode.MENU);
   const [onlineMode, setOnlineMode] = useState<GameMode>(GameMode.PVP);
@@ -137,8 +139,8 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#E0E7F1]">
         <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 text-center">
-          <h1 className="text-3xl font-bold mb-4">🎮 Bubble Couple</h1>
-          <p className="text-lg mb-4">Loading assets...</p>
+          <h1 className="text-3xl font-bold mb-4">🎮 {t('app.title')}</h1>
+          <p className="text-lg mb-4">{t('app.loading')}</p>
           <div className="w-64 h-6 bg-gray-200 border-2 border-black">
             <div 
               className="h-full bg-blue-500 transition-all duration-150"
@@ -146,7 +148,7 @@ const App: React.FC = () => {
             />
           </div>
           <p className="mt-2 text-sm text-gray-600">
-            {loadingProgress}% ({getAssetType().toUpperCase()} mode)
+            {loadingProgress}% ({t('app.loadingMode', { mode: getAssetType().toUpperCase() })})
           </p>
         </div>
       </div>

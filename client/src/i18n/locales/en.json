@@ -1,0 +1,66 @@
+{
+  "app": {
+    "title": "Bubble Couple",
+    "loading": "Loading assets...",
+    "loadingMode": "{{mode}} mode"
+  },
+  "menu": {
+    "subtitle": "Bombs, Bubbles & Betrayal",
+    "solo": "Solo",
+    "soloDesc": "Single Player",
+    "pve": "PvE",
+    "pveDesc": "Co-op Mode",
+    "pvp": "PvP",
+    "pvpDesc": "Versus Mode",
+    "online": "Online",
+    "onlineDesc": "Online Battle",
+    "howToPlay": "How to Play",
+    "player1": "P1 / Solo",
+    "player2": "P2",
+    "move": "Move",
+    "bomb": "Place Bomb",
+    "touchSupport": "Touch / Gamepad support",
+    "gamepadSupport": "Gamepad support"
+  },
+  "game": {
+    "level": "Level",
+    "lives": "Lives",
+    "exit": "Exit",
+    "nextLevel": "Next Level",
+    "gameOver": "GAME OVER",
+    "victory": "VICTORY!",
+    "playerWins": "P{{player}} WINS!",
+    "heroDied": "Hero has fallen...",
+    "bothDied": "You both died...",
+    "congratulations": "Congratulations!",
+    "missionComplete": "Mission Accomplished!",
+    "kneel": "Kneel before the champion!",
+    "playAgain": "PLAY AGAIN",
+    "backToMenu": "Back to Menu"
+  },
+  "hud": {
+    "exit": "Exit Game",
+    "p1": "P1 (YOU)",
+    "p2": "P2 (ALLY)",
+    "hero": "HERO",
+    "stage": "STAGE",
+    "trapped": "TRAPPED",
+    "dead": "DEAD",
+    "stageClear": "Stage Clear!",
+    "player": "Player",
+    "kills": "Kills",
+    "status": "Status",
+    "alive": "Alive",
+    "nextMission": "NEXT MISSION"
+  },
+  "lobby": {
+    "connected": "Connected",
+    "connecting": "Connecting...",
+    "serverUnreachable": "Server Unreachable",
+    "disconnected": "Disconnected"
+  },
+  "language": {
+    "switch": "中文",
+    "current": "EN"
+  }
+}

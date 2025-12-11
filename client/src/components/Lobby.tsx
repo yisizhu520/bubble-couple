@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { GameMode } from '../types';
 import { UseOnlineGameReturn, ConnectionStatus } from '../hooks/useOnlineGame';
 import { Wifi, WifiOff, Users, Swords, Heart, Copy, Check, ArrowLeft, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface OnlineStats {
   totalPlayers: number;
@@ -25,6 +26,7 @@ interface LobbyProps {
 type LobbyScreen = 'main' | 'create' | 'join' | 'waiting' | 'game';
 
 const Lobby: React.FC<LobbyProps> = ({ onBack, onGameStart, onlineGame }) => {
+  const { t } = useTranslation();
   const [screen, setScreen] = useState<LobbyScreen>('main');
   const [selectedMode, setSelectedMode] = useState<GameMode>(GameMode.PVP);
   const [joinCode, setJoinCode] = useState('');
@@ -178,26 +180,26 @@ const Lobby: React.FC<LobbyProps> = ({ onBack, onGameStart, onlineGame }) => {
       {status === 'connected' ? (
         <>
           <Wifi className="w-4 h-4 text-green-500" />
-          <span className="text-green-600">已连接</span>
+          <span className="text-green-600">{t('lobby.connected')}</span>
         </>
       ) : status === 'connecting' ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />
-          <span className="text-yellow-600">连接中...</span>
+          <span className="text-yellow-600">{t('lobby.connecting')}</span>
         </>
       ) : serverReachable === false ? (
         <>
           <WifiOff className="w-4 h-4 text-red-500" />
-          <span className="text-red-600">服务器不可达</span>
+          <span className="text-red-600">{t('lobby.serverUnreachable')}</span>
         </>
       ) : (
         <>
           <WifiOff className="w-4 h-4 text-gray-400" />
-          <span className="text-gray-500">未连接</span>
+          <span className="text-gray-500">{t('lobby.disconnected')}</span>
         </>
       )}
     </div>
-  ), [status, serverReachable]);
+  ), [status, serverReachable, t]);
   
   // Main menu screen - use useMemo
   const mainScreen = useMemo(() => (
